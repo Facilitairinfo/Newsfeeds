@@ -1,14 +1,3 @@
-# Elke site heeft:
-# - name: hoe jij 'm noemt
-# - url: pagina met nieuws
-# - item_selector: CSS-selectors van elk nieuwsblok
-# - title_selector: waar de titel staat
-# - link_selector: waar de link staat
-# - date_selector: (optioneel) waar de datum staat
-# - date_attr: (optioneel) neem de datum uit dit HTML-attribuut, bv. "datetime"
-# - base_url: (optioneel) om relatieve links volledig te maken
-# - max_items: (optioneel) maximaal aantal items per site
-
 sites:
   - name: Facility Management Nederland
     url: https://fmn.nl/actueel/nieuws
