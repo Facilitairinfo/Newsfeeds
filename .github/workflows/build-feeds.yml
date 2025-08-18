@@ -33,7 +33,7 @@ jobs:
 
       - name: Build feeds
         env:
-          SELF_BASE_URL: https://YOUR_USERNAME.github.io/YOUR_REPO
+          SELF_BASE_URL: https://Facilitairinfo.github.io/Newsfeeds
           PODCAST_SOURCE_FEED: https://feed.podbean.com/fmnpodcast/feed.xml
         run: |
           python scripts/build-nieuws.py
