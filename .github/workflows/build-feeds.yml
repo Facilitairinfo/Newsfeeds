@@ -1,0 +1,57 @@
+name: Build & Publish Feeds
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # elke 15 minuten
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build feeds
+        env:
+          SELF_BASE_URL: https://YOUR_USERNAME.github.io/YOUR_REPO
+          PODCAST_SOURCE_FEED: https://feed.podbean.com/fmnpodcast/feed.xml
+        run: |
+          python scripts/build-nieuws.py
+          python scripts/build-events.py
+          python scripts/build-podcast.py
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+            path: public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
