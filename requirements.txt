@@ -1,0 +1,6 @@
+feedgen
+requests
+PyYAML
+beautifulsoup4
+lxml
+python-dateutil
