@@ -1,7 +1,8 @@
-feedparser
-requests
-feedgen
-PyYAML
 beautifulsoup4
+dateparser
+feedgen
+feedparser
 lxml
+PyYAML
 python-dateutil
+requests
