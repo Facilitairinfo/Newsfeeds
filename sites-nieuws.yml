@@ -11,16 +11,18 @@
 sites:
   - name: Facility Management Nederland
     url: https://fmn.nl/actueel/nieuws
-    base_url: https://fmn.nl/
+    base_url: https://fmn.nl
     item_selector: article
     title_selector: h2, h3
     link_selector: a
     date_selector: time
     date_attr: datetime
 
-  - name: Voorbeeld Nieuws 2
-    url: https://www.voorbeeldsite2.nl/actueel
-    item_selector: .news-item
-    title_selector: .news-title
+ - name: CFP Green Buildings
+    url: https://cfp.nl/kennisbank/
+    base_url: https://cfp.nl
+    item_selector: article
+    title_selector: h2, h3
     link_selector: a
-    date_selector: .date
+    date_selector: time
+    date_attr: datetime
