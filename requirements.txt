@@ -1,4 +1,4 @@
-feedgen
+feedparser
 requests
 PyYAML
 beautifulsoup4
