@@ -18,7 +18,7 @@ sites:
     date_selector: time
     date_attr: datetime
 
- - name: CFP Green Buildings
+  - name: CFP Green Buildings
     url: https://cfp.nl/kennisbank/
     base_url: https://cfp.nl
     item_selector: article
