@@ -1,5 +1,6 @@
 feedparser
 requests
+feedgen
 PyYAML
 beautifulsoup4
 lxml
