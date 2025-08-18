@@ -7,22 +7,25 @@
 # - date_selector: (optioneel) waar de datum staat
 # - date_attr: (optioneel) neem de datum uit dit HTML-attribuut, bv. "datetime"
 # - base_url: (optioneel) om relatieve links volledig te maken
+# - max_items: (optioneel) maximaal aantal items per site
 
 sites:
   - name: Facility Management Nederland
     url: https://fmn.nl/actueel/nieuws
     base_url: https://fmn.nl
-    item_selector: article
-    title_selector: h2, h3
-    link_selector: a
-    date_selector: time
-    date_attr: datetime
+    item_selector: div.fmn-news-item-teaser
+    title_selector: h2.fmn-news-item-teaser__title a
+    link_selector: h2.fmn-news-item-teaser__title a
+    date_selector: div.fmn-news-item-teaser__date time
+    date_attr:
+    max_items: 5
 
   - name: CFP Green Buildings
     url: https://cfp.nl/kennisbank/
     base_url: https://cfp.nl
-    item_selector: article
-    title_selector: h2, h3
-    link_selector: a
-    date_selector: time
-    date_attr: datetime
+    item_selector: div.cases__case
+    title_selector: p a
+    link_selector: p a
+    date_selector: span
+    date_attr:
+    max_items: 5
