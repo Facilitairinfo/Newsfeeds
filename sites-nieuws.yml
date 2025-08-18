@@ -1,0 +1,26 @@
+# Elke site heeft:
+# - name: hoe jij 'm noemt
+# - url: pagina met nieuws
+# - item_selector: CSS-selectors van elk nieuwsblok
+# - title_selector: waar de titel staat
+# - link_selector: waar de link staat
+# - date_selector: (optioneel) waar de datum staat
+# - date_attr: (optioneel) neem de datum uit dit HTML-attribuut, bv. "datetime"
+# - base_url: (optioneel) om relatieve links volledig te maken
+
+sites:
+  - name: Facility Management Nederland
+    url: https://fmn.nl/actueel/nieuws
+    base_url: https://fmn.nl/
+    item_selector: article
+    title_selector: h2, h3
+    link_selector: a
+    date_selector: time
+    date_attr: datetime
+
+  - name: Voorbeeld Nieuws 2
+    url: https://www.voorbeeldsite2.nl/actueel
+    item_selector: .news-item
+    title_selector: .news-title
+    link_selector: a
+    date_selector: .date
