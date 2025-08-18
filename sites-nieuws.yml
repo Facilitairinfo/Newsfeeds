@@ -14,7 +14,7 @@ sites:
     base_url: https://cfp.nl
     item_selector: div.cases__case
     title_selector: p a
-    link_selector: p a
-    date_selector: span
+    link_selector: p a::attr(href)
+    date_selector: span.single__date
     date_attr:
     max_items: 5
