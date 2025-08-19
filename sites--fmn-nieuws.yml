@@ -1,0 +1,7 @@
+- name: FMN Nieuws
+  url: https://www.facilitairnetwerk.com/nieuws/
+  item_selector: div.news__item
+  title_selector: h3.news__title
+  link_selector: a.news__link
+  date_selector: span.news__date
+  date_format: "%d-%m-%Y"
