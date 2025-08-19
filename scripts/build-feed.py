@@ -51,11 +51,10 @@ def scrape_site(site):
         link = urljoin(site.get("base_url") or site["url"], link_el.get("href", ""))
         title = pick_text(title_el or link_el) or link
 
-        # Generieke datumparser (werkt voor nieuws, events, podcasts)
+        # Alleen argumenten meegeven die parse_event_date kent
         dt = parse_event_date(
             block,
             date_selector=site.get("date_selector"),
-            date_format=site.get("date_format"),
             fallback_day_selector=site.get("fallback_day_selector"),
             fallback_month_selector=site.get("fallback_month_selector"),
             fallback_year_selector=site.get("fallback_year_selector")
