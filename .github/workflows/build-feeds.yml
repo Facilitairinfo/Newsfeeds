@@ -3,13 +3,14 @@ name: Build Feeds
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 */6 * * *"  # elke 6 uur
+    - cron: "0 */6 * * *" # elke 6 uur
   push:
     branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,32 +22,37 @@ jobs:
 
       - name: Install dependencies + RSS validator
         run: |
+          pip install --upgrade pip
           pip install -r requirements.txt
-          sudo apt-get update && sudo apt-get install -y feedvalidator
+          pip install feedvalidator
 
       # --- Events ---
       - name: Build events feed
         run: python scripts/build-feed.py sites-events.yml
+
       - name: Validate events RSS
-        run: feedvalidator docs/events.xml
+        run: python -m feedvalidator docs/events.xml
 
       # --- Podcast ---
       - name: Build podcast feed
         run: python scripts/build-feed.py sites-podcast.yml
+
       - name: Validate podcast RSS
-        run: feedvalidator docs/podcast.xml
+        run: python -m feedvalidator docs/podcast.xml
 
       # --- FMN Nieuws ---
       - name: Build FMN nieuws feed
         run: python scripts/build-feed.py sites-fmn-nieuws.yml
+
       - name: Validate FMN nieuws RSS
-        run: feedvalidator docs/fmn-nieuws.xml
+        run: python -m feedvalidator docs/fmn-nieuws.xml
 
       # --- Gecombineerd ---
       - name: Build gecombineerde feed
         run: python scripts/build-feed.py sites-events.yml sites-podcast.yml sites-fmn-nieuws.yml
+
       - name: Validate gecombineerde RSS
-        run: feedvalidator docs/combined.xml
+        run: python -m feedvalidator docs/combined.xml
 
       - name: Commit and push changes
         run: |
