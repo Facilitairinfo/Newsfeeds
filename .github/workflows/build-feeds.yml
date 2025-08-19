@@ -1,62 +1,43 @@
-name: Build & Publish Feeds
+name: Build Feeds
 
 on:
-  schedule:
-    - cron: "*/15 * * * *"   # elke 15 minuten
   workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"  # elke 6 uur
   push:
     branches: [ main ]
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.x"
 
       - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build events feed
+        run: python scripts/build-feed.py sites-events.yml
+
+      - name: Build podcast feed
+        run: python scripts/build-feed.py sites-podcast.yml
+
+      - name: Build FMN nieuws feed
+        run: python scripts/build-feed.py sites-fmn-nieuws.yml
+
+      - name: Build gecombineerde feed
+        run: python scripts/build-feed.py sites-events.yml sites-podcast.yml sites-fmn-nieuws.yml
+
+      - name: Commit and push changes
         run: |
-          pip install -r requirements.txt
-
-      - name: Build feeds
-        env:
-          SELF_BASE_URL: https://Facilitairinfo.github.io/Newsfeeds
-          PODCAST_SOURCE_FEED: https://feed.podbean.com/fmnpodcast/feed.xml
-        run: |
-          for f in sites-*.yml; do
-            echo "Verwerk $f..."
-            python scripts/build-nieuws.py "$f"
-          done
-          python scripts/build-events.py
-          python scripts/build-podcast.py
-          python scripts/build-index.py
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: docs
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/*.xml
+          git commit -m "Auto-update feeds" || echo "Geen wijzigingen"
+          git push
