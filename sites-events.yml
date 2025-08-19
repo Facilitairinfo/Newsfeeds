@@ -1,9 +1,8 @@
-sites:
-  - name: Facility Management Nederland
-    url: https://fmn.nl/actueel/evenementenagenda
-    base_url: https://fmn.nl
-    item_selector: .event
-    title_selector: .event-title
-    link_selector: a
-    date_selector: time
-    date_attr: datetime
+- name: Facility Management Nederland
+  url: https://fmn.nl/actueel/evenementenagenda
+  base_url: https://fmn.nl
+  item_selector: .event
+  title_selector: .event-title
+  link_selector: a
+  date_selector: time
+  date_attr: datetime
