@@ -81,17 +81,20 @@ def build_feed(all_items, out_path, feed_title, feed_path):
     fg.link(href=SELF_BASE_URL, rel="alternate")
     fg.description(f"{feed_title} – automatisch bijgewerkt")
     fg.language("nl")
+
     now = datetime.now(timezone.utc)
     sorted_items = sorted(
         (dict(i, published=(i["published"] or now)) for i in all_items),
         key=lambda x: x["published"], reverse=True
     )[:100]
+
     for it in sorted_items:
         fe = fg.add_entry()
         fe.id(it["link"])
         fe.title(f'{it["title"]} ({it["source"]})')
         fe.link(href=it["link"])
         fe.published(it["published"])
+
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     fg.rss_file(out_path)
 
@@ -99,17 +102,20 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Gebruik: python build-feed.py <sites-*.yml> [<sites-*.yml> ...]")
         sys.exit(1)
+
     all_sites, all_items = [], []
     for yaml_file in sys.argv[1:]:
         sites = load_sites(yaml_file)
         all_sites.extend(sites)
         for site in sites:
             all_items.extend(scrape_site(site))
+
     # naam van eerste bestand bepaalt feednaam bij 1 input, anders 'combined'
     if len(sys.argv) == 2:
         feed_name = os.path.splitext(os.path.basename(sys.argv[1]))[0].replace("sites-", "")
     else:
         feed_name = "combined"
+
     output_file = f"{feed_name}.xml"
     output_path = os.path.join(os.path.dirname(__file__), f"../docs/{output_file}")
     build_feed(all_items, output_path, feed_name.replace("-", " ").title(), output_file)
