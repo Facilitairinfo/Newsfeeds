@@ -1,0 +1,7 @@
+- name: FMHaaglanden Nieuws
+  url: https://www.fmhaaglanden.nl/actueel/nieuws
+  item_selector: article
+  title_selector: h2 a
+  link_selector: h2 a
+  date_selector: time
+  date_format: "%d-%m-%Y"
