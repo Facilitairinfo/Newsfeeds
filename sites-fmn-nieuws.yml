@@ -4,4 +4,4 @@
   title_selector: h2.fmn-news-item-teaser__title a
   link_selector: h2.fmn-news-item-teaser__title a
   date_selector: div.fmn-news-item-teaser__date time
-  date_format: "%d %B %Y"   # Let op: datum in Nederlandse tekst zoals "3 weken geleden" kun je evt. met relatieve parse aanpakken
+  date_format: "%d %B %Y"
