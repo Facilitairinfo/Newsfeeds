@@ -6,3 +6,4 @@
   link_selector: a
   date_selector: time
   date_attr: datetime
+  date_format: "%Y-%m-%d"
