@@ -38,7 +38,10 @@ jobs:
           SELF_BASE_URL: https://Facilitairinfo.github.io/Newsfeeds
           PODCAST_SOURCE_FEED: https://feed.podbean.com/fmnpodcast/feed.xml
         run: |
-          python scripts/build-nieuws.py
+          for f in sites-*.yml; do
+            echo "Verwerk $f..."
+            python scripts/build-nieuws.py "$f"
+          done
           python scripts/build-events.py
           python scripts/build-podcast.py
 
