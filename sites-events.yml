@@ -4,6 +4,14 @@
   item_selector: .fmn-agenda-item-teaser
   title_selector: .fmn-agenda-item-teaser__title a
   link_selector: .fmn-agenda-item-teaser__title a
+
+  # Eerst proberen: pak de datum uit het title-attribuut
   date_selector: .calendar-date
   date_attr: title
   date_format: "%d %B %Y"
+
+  # Als title ontbreekt: fallback selectors (dag + maand + jaar zelf samenvoegen in code)
+  # Dit kun je in je scraper afhandelen als date_attr leeg is
+  fallback_day_selector: .calendar-date .day
+  fallback_month_selector: .calendar-date .month
+  fallback_year_selector: .calendar-date .year
