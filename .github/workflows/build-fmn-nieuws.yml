@@ -1,0 +1,39 @@
+name: Build FMN Nieuws Only
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-fmn-nieuws:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies + feedparser
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install feedparser
+
+      - name: Build FMN nieuws feed
+        run: python scripts/build-feed.py sites-fmn-nieuws.yml
+
+      - name: Validate FMN nieuws RSS
+        run: |
+          python -c "import feedparser; d=feedparser.parse(open('docs/fmn-nieuws.xml','rb').read()); \
+          assert not d.bozo, f'FMN nieuws RSS parse error: {d.bozo_exception}'"
+
+      - name: Commit and push FMN nieuws feed
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/fmn-nieuws.xml
+          git commit -m "Auto-update FMN nieuws feed" || echo "Geen wijzigingen"
+          git push
