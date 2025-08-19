@@ -1,8 +1,6 @@
-beautifulsoup4
-dateparser
-feedgen
-feedparser
-lxml
-PyYAML
-python-dateutil
-requests
+beautifulsoup4         # HTML scraping
+dateparser             # Flexibele datumextractie
+feedgen                # RSS-feed generatie
+lxml                   # Parser voor BeautifulSoup
+PyYAML                 # YAML-bestanden verwerken
+requests               # HTTP-verzoeken
