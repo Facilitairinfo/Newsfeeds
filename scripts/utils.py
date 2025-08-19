@@ -15,23 +15,36 @@ def parse_event_date(
     block=None,
     date_str=None,
     date_selector=None,
+    date_attr=None,
+    month_selector=None,
+    year_selector=None,
     fallback_year_selector=None
 ):
     """
     Probeert een datumstring te parsen naar een datetime-object.
-    - Kan direct een string krijgen via `date_str`.
-    - Of zelf een element zoeken in `block` m.b.v. `date_selector`.
-    - Optioneel kan `fallback_year_selector` gebruikt worden om ontbrekend jaar toe te voegen.
 
-    Geeft None terug als er geen datum herkend wordt.
+    Werkt met:
+    - Rechtstreeks meegegeven `date_str`
+    - Een element opgehaald via `date_selector`
+    - Of, als `date_attr` is opgegeven, de waarde van dat attribuut
+    - Optioneel extra jaar via `fallback_year_selector`
+
+    Onbekende extra parameters worden genegeerd, zodat oudere aanroepen compatibel blijven.
     """
+
     cleaned = None
 
-    # 1. Als er direct een datumstring meegegeven wordt
+    # 1. Direct aangeleverde string
     if date_str:
         cleaned = str(date_str).strip()
 
-    # 2. Zo niet, probeer uit de HTML-block te halen met de selector
+    # 2. Specifieke attribuutwaarde uit een element
+    elif block is not None and date_selector and date_attr:
+        el = block.select_one(date_selector)
+        if el and el.has_attr(date_attr):
+            cleaned = el[date_attr].strip()
+
+    # 3. Tekstinhoud van een element
     elif block is not None and date_selector:
         el = block.select_one(date_selector)
         if el:
@@ -41,7 +54,7 @@ def parse_event_date(
         print(f"{Colors.WARNING}⚠ Geen datumstring ontvangen in parse_event_date{Colors.ENDC}")
         return None
 
-    # 3. Bekende formaten eerst proberen
+    # 4. Bekende vaste formaten proberen
     for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y", "%d-%m-%y"):
         try:
             parsed = datetime.strptime(cleaned, fmt)
@@ -50,19 +63,18 @@ def parse_event_date(
         except ValueError:
             pass
 
-    # 4. Met dateparser proberen
+    # 5. Dateparser fallback
     parsed = dateparser.parse(cleaned)
     if parsed:
         print(f"{Colors.OKBLUE}ℹ Parsed with dateparser: '{cleaned}' → {parsed}{Colors.ENDC}")
     else:
         print(f"{Colors.WARNING}⚠ Kon datum niet parsen: '{cleaned}'{Colors.ENDC}")
 
-    # 5. Indien jaar ontbreekt maar fallback_year_selector aanwezig is
+    # 6. Als geen jaar aanwezig is, fallback_year_selector proberen
     if not parsed and block is not None and fallback_year_selector:
         year_el = block.select_one(fallback_year_selector)
         if year_el:
-            year_text = year_el.get_text(strip=True)
-            candidate = f"{cleaned} {year_text}"
+            candidate = f"{cleaned} {year_el.get_text(strip=True)}"
             parsed = dateparser.parse(candidate)
             if parsed:
                 print(f"{Colors.OKBLUE}ℹ Parsed with fallback year: '{candidate}' → {parsed}{Colors.ENDC}")
