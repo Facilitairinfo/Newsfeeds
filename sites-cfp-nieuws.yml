@@ -4,4 +4,4 @@
   title_selector: h3 a
   link_selector: h3 a
   date_selector: span.published
-  date_format: "%d %B %Y"   # Bijvoorbeeld: 5 augustus 2025
+  date_format: "%d %B %Y"
