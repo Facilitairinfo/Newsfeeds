@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          pip install feedvalidator
+          pip install rfc-feedvalidator
 
       # --- Events ---
       - name: Build events feed
