@@ -1,7 +1,6 @@
-sites:
-  - name: FMN Podcast
-    url: https://fmn.nl/actueel/podcasts
-    item_selector: item
-    title_selector: title
-    link_selector: link
-    date_selector: pubDate
+- name: FMN Podcast
+  url: https://fmn.nl/actueel/podcasts
+  item_selector: item
+  title_selector: title
+  link_selector: link
+  date_selector: pubDate
