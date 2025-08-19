@@ -20,39 +20,47 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Install dependencies + RSS validator
+      - name: Install dependencies + feedparser
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-          pip install feedvalidator
+          pip install feedparser
 
       # --- Events ---
       - name: Build events feed
         run: python scripts/build-feed.py sites-events.yml
 
       - name: Validate events RSS
-        run: python -m feedvalidator docs/events.xml
+        run: |
+          python -c "import feedparser; d=feedparser.parse(open('docs/events.xml','rb').read()); \
+          assert not d.bozo, f'Events RSS parse error: {d.bozo_exception}'"
 
       # --- Podcast ---
       - name: Build podcast feed
         run: python scripts/build-feed.py sites-podcast.yml
 
       - name: Validate podcast RSS
-        run: python -m feedvalidator docs/podcast.xml
+        run: |
+          python -c "import feedparser; d=feedparser.parse(open('docs/podcast.xml','rb').read()); \
+          assert not d.bozo, f'Podcast RSS parse error: {d.bozo_exception}'"
 
       # --- FMN Nieuws ---
       - name: Build FMN nieuws feed
         run: python scripts/build-feed.py sites-fmn-nieuws.yml
 
       - name: Validate FMN nieuws RSS
-        run: python -m feedvalidator docs/fmn-nieuws.xml
+        run: |
+          python -c "import feedparser; d=feedparser.parse(open('docs/fmn-nieuws.xml','rb').read()); \
+          assert not d.bozo, f'FMN nieuws RSS parse error: {d.bozo_exception}'"
 
       # --- Gecombineerd ---
       - name: Build gecombineerde feed
         run: python scripts/build-feed.py sites-events.yml sites-podcast.yml sites-fmn-nieuws.yml
 
       - name: Validate gecombineerde RSS
-        run: python -m feedvalidator docs/combined.xml
+        run: |
+          python -c "import feedparser; d=feedparser.parse(open('docs/combined.xml','rb').read()); \
+          assert not d.bozo, f'Combined RSS parse error: {d.bozo_exception}'"
 
       - name: Commit and push changes
         run: |
