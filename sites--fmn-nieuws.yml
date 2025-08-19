@@ -1,7 +1,7 @@
 - name: FMN Nieuws
-  url: https://www.facilitairnetwerk.com/nieuws/
-  item_selector: div.news__item
-  title_selector: h3.news__title
-  link_selector: a.news__link
-  date_selector: span.news__date
-  date_format: "%d-%m-%Y"
+  url: https://fmn.nl/actueel/nieuws
+  item_selector: div.fmn-news-item-teaser
+  title_selector: h2.fmn-news-item-teaser__title a
+  link_selector: h2.fmn-news-item-teaser__title a
+  date_selector: div.fmn-news-item-teaser__date time
+  date_format: "%d %B %Y"   # Let op: datum in Nederlandse tekst zoals "3 weken geleden" kun je evt. met relatieve parse aanpakken
