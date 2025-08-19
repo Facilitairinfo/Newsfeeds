@@ -41,11 +41,13 @@ def scrape_site(site):
     soup = BeautifulSoup(html, "lxml")
     items = []
     max_items = site.get("max_items", 20)
+
     for block in soup.select(site["item_selector"])[:max_items]:
         title_el = block.select_one(site["title_selector"])
         link_el = block.select_one(site["link_selector"])
         if not link_el:
             continue
+
         link = urljoin(site.get("base_url") or site["url"], link_el.get("href", ""))
         title = pick_text(title_el or link_el) or link
 
@@ -53,12 +55,12 @@ def scrape_site(site):
         dt = parse_event_date(
             block,
             date_selector=site.get("date_selector"),
-            date_attr=site.get("date_attr"),
             date_format=site.get("date_format"),
             fallback_day_selector=site.get("fallback_day_selector"),
             fallback_month_selector=site.get("fallback_month_selector"),
             fallback_year_selector=site.get("fallback_year_selector")
         )
+
         if dt and not dt.tzinfo:
             dt = dt.replace(tzinfo=timezone.utc)
 
@@ -68,6 +70,7 @@ def scrape_site(site):
             "source": site["name"],
             "published": dt
         })
+
     return items
 
 def build_feed(all_items, out_path, feed_title, feed_path):
