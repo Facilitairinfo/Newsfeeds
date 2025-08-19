@@ -44,6 +44,7 @@ jobs:
           done
           python scripts/build-events.py
           python scripts/build-podcast.py
+          python scripts/build-index.py
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
