@@ -1,26 +1,6 @@
 from datetime import datetime
 import dateparser
 
-def parse_event_date(date_str):
-    """
-    Probeert een datumstring te parsen naar een datetime-object.
-    Ondersteunt meerdere formaten en fallback via dateparser.
-    """
-    if not date_str:
-        return None
-
-    # Probeer eerst een aantal veelvoorkomende formaten
-    for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y"):
-        try:
-            return datetime.strptime(date_str.strip(), fmt)
-        except ValueError:
-            pass
-
-    # Fallback: gebruik dateparser (begrijpt ook '15 augustus 2025')
-    dt = dateparser.parse(date_str)
-    return dt
-
-# Optioneel: kleuren voor logging, als je die in build-feed gebruikt
 class Colors:
     HEADER = "\033[95m"
     OKBLUE = "\033[94m"
@@ -30,3 +10,40 @@ class Colors:
     ENDC = "\033[0m"
     BOLD = "\033[1m"
     UNDERLINE = "\033[4m"
+
+def parse_event_date(
+    date_str=None,
+    date_selector=None,
+    month_selector=None,
+    year_selector=None,
+    fallback_year_selector=None
+):
+    """
+    Probeert een datumstring te parsen naar een datetime-object.
+    Ondersteunt meerdere formaten en fallback via dateparser.
+    Alle extra parameters (selectors) worden genegeerd, maar zijn aanwezig
+    om compatibel te blijven met bestaande code.
+    """
+    # Als er een directe datumstring is, probeer die te parsen
+    if date_str:
+        cleaned = str(date_str).strip()
+        # Probeer bekende formaten
+        for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y"):
+            try:
+                parsed = datetime.strptime(cleaned, fmt)
+                print(f"{Colors.OKGREEN}✔ Parsed date '{cleaned}' → {parsed}{Colors.ENDC}")
+                return parsed
+            except ValueError:
+                pass
+
+        # Fallback naar dateparser
+        parsed = dateparser.parse(cleaned)
+        if parsed:
+            print(f"{Colors.OKBLUE}ℹ Parsed with dateparser: '{cleaned}' → {parsed}{Colors.ENDC}")
+        else:
+            print(f"{Colors.WARNING}⚠ Kon datum niet parsen: '{cleaned}'{Colors.ENDC}")
+        return parsed
+
+    # Geen date_str beschikbaar — hier kun je in de toekomst selector‑logica toevoegen
+    print(f"{Colors.WARNING}⚠ Geen datumstring ontvangen in parse_event_date{Colors.ENDC}")
+    return None
