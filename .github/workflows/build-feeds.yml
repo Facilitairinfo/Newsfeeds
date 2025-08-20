@@ -8,15 +8,18 @@ on:
       - 'scripts/**'
       - '.github/workflows/build.yml'
 
+permissions:
+  contents: write    # Nodig om commits/PR's te maken
+
 jobs:
   build-feeds:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          persist-credentials: true   # Laat token staan voor push
-          fetch-depth: 0              # Volledige historie voor commits
+          fetch-depth: 0   # volledige historie
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -33,10 +36,23 @@ jobs:
             python scripts/build-feed.py "$file"
           done
 
-      - name: Commit feeds
+      - name: Commit feeds to a new branch
         run: |
+          BRANCH="update-feeds-$(date +%Y%m%d%H%M%S)"
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
+          git checkout -b $BRANCH
           git add docs/*.xml docs/*.json
-          git commit -m "Update feeds [skip ci]" || echo "No changes to commit"
-          git push
+          git commit -m "Update feeds"
+          git push origin $BRANCH
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Update feeds"
+          branch: ${{ steps.commit-feeds.outputs.BRANCH }}
+          title: "Update feeds"
+          body: |
+            Automatisch gegenereerde update van de feeds in `docs/`.
+          labels: automated-update
