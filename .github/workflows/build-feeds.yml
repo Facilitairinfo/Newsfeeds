@@ -10,51 +10,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Haal de repo op
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # 2. Node.js installeren voor bestaande Node-build
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Install Node dependencies
-        run: npm install
-
-      - name: Build feeds (Node.js)
-        run: npm run build:feeds
-
-      # 3. Python installeren voor CFP-feed-build
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11" # match met jouw lokale versie
+          python-version: "3.11"  # match met jouw lokale versie
 
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Build CFP feed (Python)
+      - name: Build CFP feed
         run: |
           python build-feed.py --config sites-cfp-nieuws.yml --output docs/cfp-nieuws.xml
 
-      # 4. Markerbestand bijwerken (voor log/commit)
       - name: Add run marker file
         run: |
           date -u +"Last run at %Y-%m-%d %H:%M:%S UTC" > docs/last-run.txt
 
-      # 5. Debug: wijzigingen tonen
-      - name: Debug changed files
-        run: |
-          echo "📄 Gewijzigde bestanden sinds laatste commit:"
-          git status
-          echo "🔍 Diff voor markerbestand:"
-          git diff docs/last-run.txt
-
-      # 6. Commit wijzigingen naar nieuwe branch
       - name: Commit feeds to new branch
         id: commit-feeds
         run: |
@@ -67,7 +43,6 @@ jobs:
           git commit -m "Update feeds and marker file" || echo "No changes to commit"
           git push origin $BRANCH || echo "No branch pushed"
 
-      # 7. Maak pull request
       - name: Create pull request
         uses: peter-evans/create-pull-request@v5
         with:
@@ -77,14 +52,6 @@ jobs:
           body: "Automatisch bijgewerkte feeds met markerbestand."
           labels: "auto-update"
 
-      # 8. Auto-merge inschakelen
-      - name: Enable auto-merge
-        if: success()
-        run: gh pr merge --auto --merge "update-feeds*" || echo "No PR to merge"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # 9. Upload artefact van CFP-feed (altijd beschikbaar, ook bij fail)
       - name: Upload generated CFP feed as artifact
         uses: actions/upload-artifact@v4
         with:
