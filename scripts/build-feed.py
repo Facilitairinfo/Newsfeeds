@@ -1,19 +1,31 @@
-import os, sys
-from pathlib import Path
+import os
+import sys
+import yaml
+import logging
+import requests
+from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from datetime import datetime, timezone
-from bs4 import BeautifulSoup
-import yaml, requests
 from feedgen.feed import FeedGenerator
-from utils import parse_event_date
+from utils import parse_event_date  # blijft zoals in jouw repo
 
+# Basisinstellingen
 SELF_BASE_URL = "https://facilitairinfo.github.io/Newsfeeds"
-
 REQUIRED_KEYS = ["name", "url", "selectors"]
 SELECTOR_KEYS = ["item", "title", "link", "date", "summary"]
 
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+
 def get_html(url):
-    r = requests.get(url, timeout=10)
+    """Haalt HTML op met een User-Agent zodat 403's minder kans maken."""
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/115.0.0.0 Safari/537.36"
+        )
+    }
+    r = requests.get(url, headers=headers, timeout=10)
     r.raise_for_status()
     return r.text
 
@@ -21,6 +33,7 @@ def pick_text(el):
     return el.get_text(strip=True) if el else None
 
 def load_sites(file_path):
+    """Valideer en laad YAML-feedconfiguratie."""
     with open(file_path, encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
@@ -46,41 +59,52 @@ def load_sites(file_path):
     return data
 
 def scrape_site(site):
-    html = get_html(site["url"])
+    """Scrape één site en retourneer een lijst feeditems."""
+    try:
+        html = get_html(site["url"])
+    except Exception as e:
+        logging.error(f"❌ Ophalen mislukt voor {site['name']}: {e}")
+        return []
+
     soup = BeautifulSoup(html, "lxml")
-    items = []
-    max_items = site.get("max_items", 20)
     sel = site["selectors"]
+    max_items = site.get("max_items", 20)
+    items = []
 
     for block in soup.select(sel["item"])[:max_items]:
-        title_el = block.select_one(sel["title"])
-        link_el = block.select_one(sel["link"])
-        if not link_el:
+        try:
+            title_el = block.select_one(sel["title"])
+            link_el = block.select_one(sel["link"])
+            if not link_el:
+                continue
+
+            link = urljoin(site.get("base_url") or site["url"], link_el.get("href", ""))
+            title = pick_text(title_el or link_el) or link
+            date_el = block.select_one(sel["date"])
+            date_text = pick_text(date_el)
+
+            dt = parse_event_date(date_text) if date_text else None
+            if dt and not dt.tzinfo:
+                dt = dt.replace(tzinfo=timezone.utc)
+
+            summary_el = block.select_one(sel["summary"])
+            summary = pick_text(summary_el)
+
+            items.append({
+                "title": title,
+                "link": link,
+                "source": site["name"],
+                "published": dt,
+                "summary": summary
+            })
+        except Exception as e:
+            logging.warning(f"⚠️ Kon item niet verwerken: {e}")
             continue
-
-        link = urljoin(site.get("base_url") or site["url"], link_el.get("href", ""))
-        title = pick_text(title_el or link_el) or link
-        date_el = block.select_one(sel["date"])
-        date_text = pick_text(date_el)
-
-        dt = parse_event_date(date_text) if date_text else None
-        if dt and not dt.tzinfo:
-            dt = dt.replace(tzinfo=timezone.utc)
-
-        summary_el = block.select_one(sel["summary"])
-        summary = pick_text(summary_el)
-
-        items.append({
-            "title": title,
-            "link": link,
-            "source": site["name"],
-            "published": dt,
-            "summary": summary
-        })
 
     return items
 
 def build_feed(all_items, out_path, feed_title, feed_path):
+    """Bouwt een RSS-feedbestand op basis van gescrapete items."""
     fg = FeedGenerator()
     fg.id(f"{SELF_BASE_URL}/{feed_path}")
     fg.title(feed_title)
@@ -107,20 +131,32 @@ def build_feed(all_items, out_path, feed_title, feed_path):
 
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     fg.rss_file(out_path)
+    logging.info(f"💾 Feed opgeslagen: {out_path}")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Gebruik: python build-feed.py <sites-*.yml> [<sites-*.yml> ...]")
+        print("Gebruik: python build-feed.py <sites-*.yml> [meer .yml bestanden...]")
         sys.exit(1)
 
-    all_sites, all_items = [], []
+    all_items = []
     for yaml_file in sys.argv[1:]:
-        sites = load_sites(yaml_file)
-        all_sites.extend(sites)
-        for site in sites:
-            all_items.extend(scrape_site(site))
+        logging.info(f"📂 Verwerk bestand: {yaml_file}")
+        try:
+            sites = load_sites(yaml_file)
+        except Exception as e:
+            logging.error(f"❌ YAML-fout in {yaml_file}: {e}")
+            continue
 
-    feed_name = os.path.splitext(os.path.basename(sys.argv[1]))[0].replace("sites-", "") if len(sys.argv) == 2 else "combined"
+        for site in sites:
+            scraped = scrape_site(site)
+            logging.info(f"✅ {site['name']}: {len(scraped)} items gevonden")
+            all_items.extend(scraped)
+
+    # Feednaam bepalen
+    feed_name = (
+        os.path.splitext(os.path.basename(sys.argv[1]))[0].replace("sites-", "")
+        if len(sys.argv) == 2 else "combined"
+    )
     output_file = f"{feed_name}.xml"
     output_path = os.path.join(os.path.dirname(__file__), f"../docs/{output_file}")
     build_feed(all_items, output_path, feed_name.replace("-", " ").title(), output_file)
