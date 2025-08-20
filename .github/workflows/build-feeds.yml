@@ -1,44 +1,39 @@
-name: Build all feeds
+name: Build Feeds
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - '*.yml'
-      - 'scripts/**'
-      - '.github/workflows/build-feeds.yml'
-
-permissions:
-  contents: write
+  schedule:
+    - cron: "0 6 * * *" # elke dag om 06:00 UTC
 
 jobs:
-  build-feeds:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          python-version: '3.11'
+          node-version: "20"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: npm ci
 
-      - name: Build all feeds
-        run: |
-          for file in *.yml; do
-            echo "Building feed for $file"
-            python scripts/build-feed.py "$file"
-          done
+      - name: Build feeds
+        run: npm run build:feeds
 
       - name: Add run marker file
         run: |
-          echo "Last run at $(date -u)" > docs/last-run.txt
+          date -u +"Last run at %Y-%m-%d %H:%M:%S UTC" > docs/last-run.txt
+
+      - name: Debug changed files
+        run: |
+          echo "📄 Gewijzigde bestanden sinds laatste commit:"
+          git status
+          echo "🔍 Diff voor markerbestand:"
+          git diff docs/last-run.txt
 
       - name: Commit feeds to new branch
         id: commit-feeds
@@ -49,30 +44,20 @@ jobs:
           git config --global user.email "actions@github.com"
           git checkout -b $BRANCH
           git add docs/*.xml docs/*.json docs/last-run.txt
-          git commit -m "Update feeds and marker file"
-          git push origin $BRANCH
+          git commit -m "Update feeds and marker file" || echo "No changes to commit"
+          git push origin $BRANCH || echo "No branch pushed"
 
       - name: Create pull request
-        id: cpr
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ steps.commit-feeds.outputs.branch_name }}
           title: "Update feeds"
-          body: "Automatisch gegenereerde update van de feeds in `docs/`."
-          labels: automated-update
-          delete-branch: true
-          draft: false
+          body: "Automatisch bijgewerkte feeds met markerbestand."
+          labels: "auto-update"
 
       - name: Enable auto-merge
-        uses: peter-evans/enable-pull-request-automerge@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
-          merge-method: squash
-
-      - name: Upload feeds as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: generated-feeds
-          path: docs/*.xml
+        if: success()
+        run: gh pr merge --auto --merge "update-feeds*" || echo "No PR to merge"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
