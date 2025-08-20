@@ -6,10 +6,10 @@ on:
     paths:
       - '*.yml'
       - 'scripts/**'
-      - '.github/workflows/build.yml'
+      - '.github/workflows/build-feeds.yml'
 
 permissions:
-  contents: write    # Nodig om commits/PR's te maken
+  contents: write    # Nodig om commits en merges te doen
 
 jobs:
   build-feeds:
@@ -36,23 +36,30 @@ jobs:
             python scripts/build-feed.py "$file"
           done
 
-      - name: Commit feeds to a new branch
+      - name: Commit feeds to new branch
+        id: commit-feeds
         run: |
           BRANCH="update-feeds-$(date +%Y%m%d%H%M%S)"
+          echo "branch_name=$BRANCH" >> $GITHUB_OUTPUT
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
           git checkout -b $BRANCH
           git add docs/*.xml docs/*.json
-          git commit -m "Update feeds"
+          git commit -m "Update feeds" || echo "No changes to commit"
           git push origin $BRANCH
 
       - name: Create pull request
+        id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "Update feeds"
-          branch: ${{ steps.commit-feeds.outputs.BRANCH }}
+          branch: ${{ steps.commit-feeds.outputs.branch_name }}
           title: "Update feeds"
-          body: |
-            Automatisch gegenereerde update van de feeds in `docs/`.
+          body: "Automatisch gegenereerde update van de feeds in `docs/`."
           labels: automated-update
+          merge-method: squash
+          delete-branch: true
+          draft: false
+          assignees: ${{ github.actor }}
+          reviewers: ${{ github.actor }}
+          auto-merge: true
