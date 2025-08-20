@@ -57,10 +57,15 @@ jobs:
           title: "Update feeds"
           body: "Automatisch gegenereerde update van de feeds in `docs/`."
           labels: automated-update
-          merge-method: squash
           delete-branch: true
           draft: false
-          auto-merge: true
+
+      - name: Enable auto-merge
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+          merge-method: squash
 
       - name: Upload feeds as artifact
         uses: actions/upload-artifact@v4
