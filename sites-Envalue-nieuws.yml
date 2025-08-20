@@ -1,0 +1,10 @@
+name: Envalue Inzichten
+url: https://www.envalue.com/nl/inzichten/
+source: html
+type: nieuws
+selectors:
+  item: article.insight-card
+  title: .insight-card__title
+  link: a.insight-card__link
+  date: time
+  summary: .insight-card__excerpt
