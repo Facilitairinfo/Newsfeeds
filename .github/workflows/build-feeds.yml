@@ -9,7 +9,7 @@ on:
       - '.github/workflows/build-feeds.yml'
 
 permissions:
-  contents: write    # Nodig om commits en merges te doen
+  contents: write    # Nodig om commits, PR's en merges te doen
 
 jobs:
   build-feeds:
@@ -60,6 +60,10 @@ jobs:
           merge-method: squash
           delete-branch: true
           draft: false
-          assignees: ${{ github.actor }}
-          reviewers: ${{ github.actor }}
-          auto-merge: true
+          auto-merge: true   # Automatisch mergen zodra checks slagen
+
+      - name: Upload feeds as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: generated-feeds
+          path: docs/*.xml
