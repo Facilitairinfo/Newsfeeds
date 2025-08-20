@@ -1,13 +1,14 @@
 import os
 import sys
 import yaml
+import json
 import logging
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from datetime import datetime, timezone
 from feedgen.feed import FeedGenerator
-from utils import parse_event_date  # blijft zoals in jouw repo
+from utils import parse_event_date  # zelfde als in jouw repo
 
 # Basisinstellingen
 SELF_BASE_URL = "https://facilitairinfo.github.io/Newsfeeds"
@@ -94,7 +95,7 @@ def scrape_site(site):
                 "title": title,
                 "link": link,
                 "source": site["name"],
-                "published": dt,
+                "published": dt.isoformat() if dt else None,
                 "summary": summary
             })
         except Exception as e:
@@ -115,7 +116,7 @@ def build_feed(all_items, out_path, feed_title, feed_path):
 
     now = datetime.now(timezone.utc)
     sorted_items = sorted(
-        (dict(i, published=(i["published"] or now)) for i in all_items),
+        (dict(i, published=(datetime.fromisoformat(i["published"]) if i["published"] else now)) for i in all_items),
         key=lambda x: x["published"],
         reverse=True
     )[:100]
@@ -132,6 +133,13 @@ def build_feed(all_items, out_path, feed_title, feed_path):
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     fg.rss_file(out_path)
     logging.info(f"💾 Feed opgeslagen: {out_path}")
+
+def save_json(all_items, out_path):
+    """Slaat items ook op als JSON voor debugging/alternatief gebruik."""
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(all_items, f, ensure_ascii=False, indent=2)
+    logging.info(f"🗂️ JSON opgeslagen: {out_path}")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -152,11 +160,11 @@ if __name__ == "__main__":
             logging.info(f"✅ {site['name']}: {len(scraped)} items gevonden")
             all_items.extend(scraped)
 
-    # Feednaam bepalen
     feed_name = (
         os.path.splitext(os.path.basename(sys.argv[1]))[0].replace("sites-", "")
         if len(sys.argv) == 2 else "combined"
     )
-    output_file = f"{feed_name}.xml"
-    output_path = os.path.join(os.path.dirname(__file__), f"../docs/{output_file}")
-    build_feed(all_items, output_path, feed_name.replace("-", " ").title(), output_file)
+
+    docs_dir = os.path.join(os.path.dirname(__file__), "../docs")
+    build_feed(all_items, os.path.join(docs_dir, f"{feed_name}.xml"), feed_name.replace("-", " ").title(), f"{feed_name}.xml")
+    save_json(all_items, os.path.join(docs_dir, f"{feed_name}.json"))
