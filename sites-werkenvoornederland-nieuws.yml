@@ -1,0 +1,10 @@
+name: Werken voor Nederland - Vacatures
+url: https://www.werkenvoornederland.nl/vacatures?type=vacature&vakgebied=CVG.09&werkdenkniveau=CWD.08,CWD.04
+source: html
+type: vacatures
+selectors:
+  item: div.vacancy-card
+  title: h2.vacancy-card__title
+  link: a.vacancy-card__link
+  date: time
+  summary: div.vacancy-card__summary
