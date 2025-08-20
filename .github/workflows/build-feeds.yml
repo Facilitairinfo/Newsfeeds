@@ -21,7 +21,7 @@ jobs:
           node-version: "20"
 
       - name: Install Node dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build feeds (Node.js)
         run: npm run build:feeds
