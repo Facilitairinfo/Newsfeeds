@@ -1,7 +1,8 @@
 - name: CFP Nieuws
   url: https://cfp.nl/nieuws-en-cases/?type=nieuws
-  item_selector: div.loop-container div.blog-item
-  title_selector: h3 a
-  link_selector: h3 a
-  date_selector: span.published
+  selectors:
+    item: div.loop-container article
+    title: h2.entry-title a
+    link: h2.entry-title a
+    date: time.entry-date
   date_format: "%d %B %Y"
