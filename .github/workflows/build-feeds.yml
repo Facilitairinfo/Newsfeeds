@@ -27,11 +27,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Build all feeds
+      - name: Build XML feeds
         run: |
-          # Maak een lijst van alle YML-configs die je wilt bouwen
-          for config in sites-*.yml; do
+          # Lijst van .yml-configs die je wilt bouwen (nu je 5 groene feeds)
+          FEEDS=(
+            "sites-Envalue-nieuws.yml"
+            "sites-cfp-nieuws.yml"
+            "sites-fmhaaglanden.yml"
+            "sites-fmn-nieuws.yml"
+            "sites-werkenvoornederland-nieuws.yml"
+          )
+
+          for config in "${FEEDS[@]}"; do
             base=$(basename "$config" .yml)
-            echo ">>> Bouwen: $config"
-            python scripts/build-feed.py --config "$config" --output "docs/${base}.xml"
+            echo ">>> Bouwen van feed: $config"
+            python scripts/build-feed.py "$config" "docs/${base}.xml"
           done
