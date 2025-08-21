@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import sys
+import os
 import yaml
 import requests
 from bs4 import BeautifulSoup
@@ -51,10 +53,27 @@ def parse_date(date_str, fmt=None):
     except Exception:
         return date_str.strip()
 
+def write_json(items, output_path):
+    import json
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(items, f, ensure_ascii=False, indent=2)
+
+def write_xml(items, output_path):
+    import xml.etree.ElementTree as ET
+    feed = ET.Element("feed")
+    for item in items:
+        el = ET.SubElement(feed, "item")
+        ET.SubElement(el, "title").text = item.get("title", "")
+        ET.SubElement(el, "link").text = item.get("link", "")
+        ET.SubElement(el, "date").text = item.get("date", "")
+        if "summary" in item:
+            ET.SubElement(el, "summary").text = item.get("summary", "")
+    tree = ET.ElementTree(feed)
+    tree.write(output_path, encoding="utf-8", xml_declaration=True)
+
 def main():
-    import sys
     if len(sys.argv) != 3:
-        print("Gebruik: build-feed.py <config.yml> <output.json>")
+        print("Gebruik: build-feed.py <config.yml> <output.xml|.json>")
         sys.exit(1)
 
     config_path = Path(sys.argv[1])
@@ -64,9 +83,13 @@ def main():
     html = fetch_html(cfg['url'])
     items = parse_items(html, cfg)
 
-    import json
-    with open(output_path, 'w', encoding='utf-8') as f:
-        json.dump(items, f, ensure_ascii=False, indent=2)
+    ext = os.path.splitext(output_path)[1].lower()
+    if ext == ".xml":
+        write_xml(items, output_path)
+    elif ext == ".json":
+        write_json(items, output_path)
+    else:
+        raise ValueError("Ongeldig outputformaat. Gebruik .xml of .json")
 
 if __name__ == '__main__':
     main()
