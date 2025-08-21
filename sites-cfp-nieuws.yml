@@ -1,8 +1,8 @@
-- name: CFP Nieuws
-  url: https://cfp.nl/nieuws-en-cases/?type=nieuws
-  selectors:
-    item: div.loop-container article
-    title: h2.entry-title a
-    link: h2.entry-title a
-    date: time.entry-date
-  date_format: "%d %B %Y"
+name: CFP Nieuws
+url: https://cfp.nl/nieuws-en-cases/?type=nieuws
+selectors:
+  item: div.loop-container article
+  title: h2.entry-title a
+  link: h2.entry-title a
+  date: time.entry-date
+date_format: "%d %B %Y"
