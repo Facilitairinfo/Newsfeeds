@@ -1,59 +1,37 @@
-name: Build Feeds
+name: Build XML Feeds
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 6 * * *" # elke dag om 06:00 UTC
+  push:
+    branches:
+      - main
+    paths:
+      - "sites-*.yml"
+      - "scripts/build-feed.py"
 
 jobs:
-  build:
+  build-feeds:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.11"  # match met jouw lokale versie
+          python-version: '3.x'
 
-      - name: Install Python dependencies
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Build CFP feed
+      - name: Build all feeds
         run: |
-          python build-feed.py --config sites-cfp-nieuws.yml --output docs/cfp-nieuws.xml
-
-      - name: Add run marker file
-        run: |
-          date -u +"Last run at %Y-%m-%d %H:%M:%S UTC" > docs/last-run.txt
-
-      - name: Commit feeds to new branch
-        id: commit-feeds
-        run: |
-          BRANCH="update-feeds-$(date +%Y%m%d%H%M%S)"
-          echo "branch_name=$BRANCH" >> $GITHUB_OUTPUT
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
-          git checkout -b $BRANCH
-          git add docs/*.xml docs/*.json docs/last-run.txt
-          git commit -m "Update feeds and marker file" || echo "No changes to commit"
-          git push origin $BRANCH || echo "No branch pushed"
-
-      - name: Create pull request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ steps.commit-feeds.outputs.branch_name }}
-          title: "Update feeds"
-          body: "Automatisch bijgewerkte feeds met markerbestand."
-          labels: "auto-update"
-
-      - name: Upload generated CFP feed as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: cfp-nieuws.xml
-          path: docs/cfp-nieuws.xml
+          # Maak een lijst van alle YML-configs die je wilt bouwen
+          for config in sites-*.yml; do
+            base=$(basename "$config" .yml)
+            echo ">>> Bouwen: $config"
+            python scripts/build-feed.py --config "$config" --output "docs/${base}.xml"
+          done
