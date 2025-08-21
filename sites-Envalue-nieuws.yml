@@ -1,10 +1,9 @@
-name: Envalue
+name: Envalue Nieuws
 url: https://www.envalue.com/nl/inzichten/
-source: html
-type: nieuws
-selectors:
-  item: article.insight-card
-  title: .insight-card__title
-  link: a.insight-card__link
-  date: time
-  summary: .insight-card__excerpt
+item_selector: article.post-item        # elk nieuwsitem staat in een <article> met class "post-item"
+title_selector: h2.entry-title a        # titel staat in <h2 class="entry-title"><a>
+link_selector: h2.entry-title a         # link zit in hetzelfde <a>-element als de titel
+summary_selector: div.entry-summary p   # korte samenvatting in <div class="entry-summary"><p>
+date_selector: time.entry-date          # publicatiedatum in <time class="entry-date">
+date_attr: datetime                     # datumwaarde uit het datetime-attribuut
+date_format: "%Y-%m-%dT%H:%M:%S%z"      # ISO 8601 met tijdzone-offset
