@@ -1,7 +1,7 @@
-- name: FMN Nieuws
-  url: https://fmn.nl/actueel/nieuws
-  item_selector: div.fmn-news-item-teaser
-  title_selector: h2.fmn-news-item-teaser__title a
-  link_selector: h2.fmn-news-item-teaser__title a
-  date_selector: div.fmn-news-item-teaser__date time
-  date_format: "%d %B %Y"
+name: FMN Nieuws
+url: https://fmn.nl/actueel/nieuws
+item_selector: div.fmn-news-item-teaser
+title_selector: h2.fmn-news-item-teaser__title a
+link_selector: h2.fmn-news-item-teaser__title a
+date_selector: div.fmn-news-item-teaser__date time
+date_format: "%d %B %Y"
