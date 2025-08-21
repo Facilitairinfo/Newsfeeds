@@ -6,6 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 from pathlib import Path
+from email.utils import format_datetime
 
 def load_config(yml_path):
     with open(yml_path, 'r', encoding='utf-8') as f:
@@ -48,27 +49,43 @@ def parse_date(date_str, fmt=None):
         return None
     try:
         if fmt:
-            return datetime.strptime(date_str.strip(), fmt).isoformat()
-        return date_str.strip()
+            return datetime.strptime(date_str.strip(), fmt)
+        # Laat de datum staan als string; kan later evt. nog worden geïnterpreteerd
+        return datetime.fromisoformat(date_str.strip()) if "T" in date_str else datetime.strptime(date_str.strip(), "%Y-%m-%d")
     except Exception:
-        return date_str.strip()
+        return None
 
 def write_json(items, output_path):
     import json
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(items, f, ensure_ascii=False, indent=2)
 
-def write_xml(items, output_path):
+def write_rss(items, output_path, cfg):
     import xml.etree.ElementTree as ET
-    feed = ET.Element("feed")
+
+    rss = ET.Element("rss", version="2.0")
+    channel = ET.SubElement(rss, "channel")
+
+    # Basis feed-info
+    ET.SubElement(channel, "title").text = cfg.get("name", "Feed")
+    ET.SubElement(channel, "link").text = cfg.get("url", "")
+    ET.SubElement(channel, "description").text = f"Automatisch gegenereerde feed voor {cfg.get('name','')}"
+    ET.SubElement(channel, "lastBuildDate").text = format_datetime(datetime.utcnow())
+
     for item in items:
-        el = ET.SubElement(feed, "item")
-        ET.SubElement(el, "title").text = item.get("title", "")
-        ET.SubElement(el, "link").text = item.get("link", "")
-        ET.SubElement(el, "date").text = item.get("date", "")
-        if "summary" in item:
-            ET.SubElement(el, "summary").text = item.get("summary", "")
-    tree = ET.ElementTree(feed)
+        it = ET.SubElement(channel, "item")
+        ET.SubElement(it, "title").text = item.get("title", "")
+        ET.SubElement(it, "link").text = item.get("link", "")
+        if item.get("summary"):
+            ET.SubElement(it, "description").text = item.get("summary", "")
+        pubdate = item.get("date")
+        if isinstance(pubdate, datetime):
+            ET.SubElement(it, "pubDate").text = format_datetime(pubdate)
+        elif isinstance(pubdate, str) and pubdate.strip():
+            # pubDate als string
+            ET.SubElement(it, "pubDate").text = pubdate
+
+    tree = ET.ElementTree(rss)
     tree.write(output_path, encoding="utf-8", xml_declaration=True)
 
 def main():
@@ -85,7 +102,7 @@ def main():
 
     ext = os.path.splitext(output_path)[1].lower()
     if ext == ".xml":
-        write_xml(items, output_path)
+        write_rss(items, output_path, cfg)
     elif ext == ".json":
         write_json(items, output_path)
     else:
