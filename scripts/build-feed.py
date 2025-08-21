@@ -7,15 +7,37 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from pathlib import Path
 from email.utils import format_datetime
+import json
+import xml.etree.ElementTree as ET
 
 def load_config(yml_path):
     with open(yml_path, 'r', encoding='utf-8') as f:
         return yaml.safe_load(f)
 
 def fetch_html(url):
-    r = requests.get(url, timeout=10)
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/128.0.0.0 Safari/537.36"
+        ),
+        "Accept-Language": "nl-NL,nl;q=0.9,en;q=0.8"
+    }
+    r = requests.get(url, headers=headers, timeout=10)
     r.raise_for_status()
     return r.text
+
+def parse_date(date_str, fmt=None):
+    if not date_str:
+        return None
+    try:
+        if fmt:
+            return datetime.strptime(date_str.strip(), fmt)
+        if "T" in date_str:
+            return datetime.fromisoformat(date_str.strip())
+        return datetime.strptime(date_str.strip(), "%Y-%m-%d")
+    except Exception:
+        return None
 
 def parse_items(html, config):
     soup = BeautifulSoup(html, 'html.parser')
@@ -31,7 +53,7 @@ def parse_items(html, config):
             l = elem.select_one(config['link_selector'])
             if l and l.has_attr('href'):
                 item['link'] = l['href']
-        # Summary (optioneel)
+        # Samenvatting
         if 'summary_selector' in config:
             s = elem.select_one(config['summary_selector'])
             item['summary'] = s.get_text(strip=True) if s else ''
@@ -44,29 +66,15 @@ def parse_items(html, config):
         items.append(item)
     return items
 
-def parse_date(date_str, fmt=None):
-    if not date_str:
-        return None
-    try:
-        if fmt:
-            return datetime.strptime(date_str.strip(), fmt)
-        # Laat de datum staan als string; kan later evt. nog worden geïnterpreteerd
-        return datetime.fromisoformat(date_str.strip()) if "T" in date_str else datetime.strptime(date_str.strip(), "%Y-%m-%d")
-    except Exception:
-        return None
-
 def write_json(items, output_path):
-    import json
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(items, f, ensure_ascii=False, indent=2)
 
 def write_rss(items, output_path, cfg):
-    import xml.etree.ElementTree as ET
-
     rss = ET.Element("rss", version="2.0")
     channel = ET.SubElement(rss, "channel")
 
-    # Basis feed-info
+    # Basis info
     ET.SubElement(channel, "title").text = cfg.get("name", "Feed")
     ET.SubElement(channel, "link").text = cfg.get("url", "")
     ET.SubElement(channel, "description").text = f"Automatisch gegenereerde feed voor {cfg.get('name','')}"
@@ -77,12 +85,11 @@ def write_rss(items, output_path, cfg):
         ET.SubElement(it, "title").text = item.get("title", "")
         ET.SubElement(it, "link").text = item.get("link", "")
         if item.get("summary"):
-            ET.SubElement(it, "description").text = item.get("summary", "")
+            ET.SubElement(it, "description").text = item["summary"]
         pubdate = item.get("date")
         if isinstance(pubdate, datetime):
             ET.SubElement(it, "pubDate").text = format_datetime(pubdate)
         elif isinstance(pubdate, str) and pubdate.strip():
-            # pubDate als string
             ET.SubElement(it, "pubDate").text = pubdate
 
     tree = ET.ElementTree(rss)
@@ -97,6 +104,10 @@ def main():
     output_path = Path(sys.argv[2])
 
     cfg = load_config(config_path)
+    if isinstance(cfg, list):
+        print(f"FOUT: {config_path} bevat een lijst, geen dict. Verwijder het '-' aan het begin van het bestand.")
+        sys.exit(1)
+
     html = fetch_html(cfg['url'])
     items = parse_items(html, cfg)
 
