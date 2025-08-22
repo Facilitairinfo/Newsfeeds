@@ -1,6 +1,7 @@
 name: CFP Nieuws
-url: https://cfp.nl/nieuws-en-cases/?type=nieuws
-item_selector: article.post-item             # elk nieuwsitem staat in een <article> met class "post-item"
+url: https://cfp.nl/nieuws/
+link: https://cfp.nl/nieuws/
+item_selector: article.blog-article
 title_selector: h2.entry-title a              # titel staat in <h2 class="entry-title"><a>
 link_selector: h2.entry-title a               # link zit in hetzelfde <a>-element als de titel
 summary_selector: div.entry-summary p         # korte samenvatting in <div class="entry-summary"><p>
