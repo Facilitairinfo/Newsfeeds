@@ -3,10 +3,10 @@
   <channel>
     <title>Envalue Inzichten</title>
     <link>https://www.envalue.com/nl/inzichten/</link>
-    <description>Laatste inzichten en artikelen van Envalue</description>
+    <description>Laatste inzichten en nieuws van Envalue</description>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>python-feedgen</generator>
     <language>nl</language>
-    <lastBuildDate>Fri, 22 Aug 2025 21:44:26 +0200</lastBuildDate>
+    <lastBuildDate>Fri, 22 Aug 2025 21:57:32 +0200</lastBuildDate>
   </channel>
 </rss>
