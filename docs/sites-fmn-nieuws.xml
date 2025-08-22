@@ -1,12 +1,72 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0">
   <channel>
-    <title>sites-fmn-nieuws</title>
-    <link>https://fmn.nl/nieuws</link>
-    <description>Feed voor sites-fmn-nieuws</description>
+    <title>FMN Nieuwsoverzicht</title>
+    <link>https://fmn.nl/actueel/nieuws</link>
+    <description>Laatste nieuws van Facility Management Nederland</description>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>python-feedgen</generator>
     <language>nl</language>
-    <lastBuildDate>Fri, 22 Aug 2025 18:51:13 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 22 Aug 2025 21:44:30 +0200</lastBuildDate>
+    <item>
+      <title>Partners</title>
+      <link>https://fmn.nl/content/197-partners</link>
+      <guid isPermaLink="true">https://fmn.nl/content/197-partners</guid>
+    </item>
+    <item>
+      <title>Over ons</title>
+      <link>https://fmn.nl/content/440-over-fmn</link>
+      <guid isPermaLink="true">https://fmn.nl/content/440-over-fmn</guid>
+    </item>
+    <item>
+      <title>Over ons</title>
+      <link>https://fmn.nl/content/440-over-fmn</link>
+      <guid isPermaLink="true">https://fmn.nl/content/440-over-fmn</guid>
+    </item>
+    <item>
+      <title>Studieonderzoek: Jouw ervaring met FMIS in 5 minuten!</title>
+      <link>https://fmn.nl/nieuws/1323-studieonderzoek-jouw-ervaring-met-fmis-in-5-minuten</link>
+      <guid isPermaLink="true">https://fmn.nl/nieuws/1323-studieonderzoek-jouw-ervaring-met-fmis-in-5-minuten</guid>
+    </item>
+    <item>
+      <title>Compass Group neemt Vermaat over: versterking van het Europese foodservice-landschap</title>
+      <link>https://fmn.nl/nieuws/1443-compass-group-neemt-vermaat-over-versterking-van-het-europese-foodservice-landschap</link>
+      <guid isPermaLink="true">https://fmn.nl/nieuws/1443-compass-group-neemt-vermaat-over-versterking-van-het-europese-foodservice-landschap</guid>
+    </item>
+    <item>
+      <title>FMN 30 jaar: op zoek naar de 30 invloedrijkste vakgenoten</title>
+      <link>https://fmn.nl/nieuws/1440-fmn-30-jaar-op-zoek-naar-de-30-invloedrijkste-vakgenoten</link>
+      <guid isPermaLink="true">https://fmn.nl/nieuws/1440-fmn-30-jaar-op-zoek-naar-de-30-invloedrijkste-vakgenoten</guid>
+    </item>
+    <item>
+      <title>Inloggen</title>
+      <link>https://www.interactieve-nfcindex.nl/#login</link>
+      <guid isPermaLink="true">https://www.interactieve-nfcindex.nl/#login</guid>
+    </item>
+    <item>
+      <title>Over de FMN Academy</title>
+      <link>https://fmn.nl/fmn-academy/over-de-fmn-academy</link>
+      <guid isPermaLink="true">https://fmn.nl/fmn-academy/over-de-fmn-academy</guid>
+    </item>
+    <item>
+      <title>Sluit je aan!</title>
+      <link>https://fmn.nl/verbinden/lidmaatschapsvormen</link>
+      <guid isPermaLink="true">https://fmn.nl/verbinden/lidmaatschapsvormen</guid>
+    </item>
+    <item>
+      <title>Kennisthema's</title>
+      <link>https://fmn.nl/kennisdelen/kennisthemas</link>
+      <guid isPermaLink="true">https://fmn.nl/kennisdelen/kennisthemas</guid>
+    </item>
+    <item>
+      <title>Over FMN</title>
+      <link>https://fmn.nl/over-ons/over-fmn</link>
+      <guid isPermaLink="true">https://fmn.nl/over-ons/over-fmn</guid>
+    </item>
+    <item>
+      <title>Cursusagenda</title>
+      <link>https://fmn.nl/actueel/evenementenagenda?type%5B%5D=2493</link>
+      <guid isPermaLink="true">https://fmn.nl/actueel/evenementenagenda?type%5B%5D=2493</guid>
+    </item>
   </channel>
 </rss>
