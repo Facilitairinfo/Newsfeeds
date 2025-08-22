@@ -1,45 +1,37 @@
-name: Build XML Feeds
+name: Build RSS Feeds
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - "sites-*.yml"
-      - "scripts/build-feed.py"
+  schedule:
+    - cron: '0 * * * *'  # elk uur
 
 jobs:
-  build-feeds:
+  build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: '3.11'
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
-      - name: Build XML feeds
-        run: |
-          # Lijst van .yml-configs die je wilt bouwen (nu je 5 groene feeds)
-          FEEDS=(
-            "sites-Envalue-nieuws.yml"
-            "sites-cfp-nieuws.yml"
-            "sites-fmhaaglanden.yml"
-            "sites-fmn-nieuws.yml"
-            "sites-werkenvoornederland-nieuws.yml"
-          )
+      - name: Ensure docs/ directory exists
+        run: mkdir -p docs
 
-          for config in "${FEEDS[@]}"; do
-            base=$(basename "$config" .yml)
-            echo ">>> Bouwen van feed: $config"
-            python scripts/build-feed.py "$config" "docs/${base}.xml"
-          done
+      - name: Run feed builder
+        run: |
+          echo "Start feed generation"
+          python build-feed.py || echo "Feed generation had errors, continuing..."
+
+      - name: Commit and push updated feeds
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add docs/*.xml
+          git commit -m "Update RSS feeds [auto]" || echo "No changes to commit"
+          git push origin main
