@@ -1,6 +1,7 @@
-name: FMHaaglanden Nieuws
+name: FM Haaglanden
 url: https://www.fmhaaglanden.nl/actueel/nieuws
-item_selector: li.overview__item                  # elk nieuwsitem staat in een <li> met class "overview__item"
+link: https://www.fmhaaglanden.nl/actueel/nieuws
+item_selector: li.news-list__item
 title_selector: h3.overview__title a               # titel staat in <h3 class="overview__title"><a>
 link_selector: h3.overview__title a                # link zit in hetzelfde <a>-element als de titel
 summary_selector: div.overview__intro p            # korte samenvatting in <div class="overview__intro"><p>
