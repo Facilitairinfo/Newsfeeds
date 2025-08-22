@@ -3,7 +3,11 @@ name: Build RSS Feeds
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 * * * *'  # elk uur
+    - cron: '0 * * * *'  # elk uur draaien
+
+# ✅ Geef GitHub Actions schrijfrechten op de repo
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -25,8 +29,8 @@ jobs:
 
       - name: Run feed builder
         run: |
-          echo "Start feed generation"
-          python build-feed.py || echo "Feed generation had errors, continuing..."
+          echo "▶ Start feed generation"
+          python build-feed.py || echo "⚠ Feed generation had errors, continuing..."
 
       - name: Commit and push updated feeds
         run: |
