@@ -1,5 +1,6 @@
 name: Werken voor Nederland – Vacatures (CVG.09, CWD.08/CWD.04)
 url: https://www.werkenvoornederland.nl/vacatures?type=vacature&vakgebied=CVG.09&werkdenkniveau=CWD.08,CWD.04
+link: https://www.werkenvoornederland.nl/vacatures?type=vacature&vakgebied=CVG.09&werkdenkniveau=CWD.08,CWD.04
 item_selector: li.vacature-overzicht__item             # elk vacatureblok staat in een <li> met deze class
 title_selector: h2.vacature-overzicht__title a         # titel staat in <h2 class="vacature-overzicht__title"><a>
 link_selector: h2.vacature-overzicht__title a          # link zit in hetzelfde <a>-element als de titel
