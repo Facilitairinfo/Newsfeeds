@@ -1,27 +1,7 @@
 title: "Envalue Inzichten"
-url: "https://www.envalue.com/nl/inzichten/"
+url: "https://www.envalue.com/nl/inzichten/feed/"
 link: "https://www.envalue.com/nl/inzichten/"
 language: "nl"
 description: "Laatste inzichten en nieuws van Envalue"
 max_items: 12
-
-item_selector:
-  - "ul.wp-block-post-template > li.wp-block-post"
-  - ".wp-block-post"
-
-title_selector:
-  - "h2.wp-block-post-title a"
-  - "a"
-
-link_selector:
-  - "h2.wp-block-post-title a"
-  - "a"
-
-summary_selector:
-  - "div.wp-block-post-excerpt"
-  - "p"
-
-date_selector:
-  - "time.wp-block-post-date"
-  - "time"
-date_attr: "datetime"
+feed_type: "rss"
