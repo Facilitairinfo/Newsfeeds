@@ -1,28 +1,27 @@
-title: Envalue Inzichten
-link: https://www.envalue.com/nl/inzichten/
-description: Laatste inzichten en artikelen van Envalue
-language: nl
+title: "Envalue Inzichten"
+url: "https://www.envalue.com/nl/inzichten/"
+link: "https://www.envalue.com/nl/inzichten/"
+language: "nl"
+description: "Laatste inzichten en nieuws van Envalue"
 max_items: 12
-sources:
-  - url: https://www.envalue.com/nl/inzichten/
-    item_selector:
-      - "article"
-      - ".archive-list article"
-      - ".posts article"
-    title_selector:
-      - "h2 a"
-      - "h3 a"
-      - "a[rel='bookmark']"
-    link_selector:
-      - "h2 a"
-      - "h3 a"
-      - "a[rel='bookmark']"
-    summary_selector:
-      - ".excerpt"
-      - ".intro"
-      - "p"
-    date_selector:
-      - "time"
-      - ".date"
-      - ".post-meta time"
-    date_attr: datetime
+
+item_selector:
+  - "ul.wp-block-post-template > li.wp-block-post"
+  - ".wp-block-post"
+
+title_selector:
+  - "h2.wp-block-post-title a"
+  - "a"
+
+link_selector:
+  - "h2.wp-block-post-title a"
+  - "a"
+
+summary_selector:
+  - "div.wp-block-post-excerpt"
+  - "p"
+
+date_selector:
+  - "time.wp-block-post-date"
+  - "time"
+date_attr: "datetime"
