@@ -10,6 +10,7 @@ from feedgen.feed import FeedGenerator
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import dateparser
+import feedparser
 
 CONFIG_DIR = "configs"
 OUTPUT_DIR = "docs"
@@ -99,8 +100,35 @@ def build_feed_from_config(cfg_path, session):
     fg.lastBuildDate(datetime.now(ZoneInfo("Europe/Amsterdam")))
 
     max_items = int(cfg.get("max_items", 12))
-    total_items = 0
 
+    # ✅ RSS-verwerking
+    if cfg.get("feed_type") == "rss":
+        print(f"🔗 RSS-feed gedetecteerd voor {feed_name}")
+        try:
+            feed = feedparser.parse(cfg["url"])
+        except Exception as e:
+            print(f"⚠ Fout bij ophalen RSS-feed: {e}")
+            return False
+
+        count = 0
+        for entry in feed.entries[:max_items]:
+            title = entry.get("title")
+            link = entry.get("link")
+            summary = entry.get("summary", "")
+            pubdate = dateparser.parse(entry.get("published", "")) if entry.get("published") else None
+            if not title and not link:
+                continue
+            add_entry(fg, title, link, summary, pubdate)
+            count += 1
+
+        print(f"• RSS-feed → {count} items")
+        os.makedirs(OUTPUT_DIR, exist_ok=True)
+        out_path = os.path.join(OUTPUT_DIR, f"{feed_name}.xml")
+        fg.rss_file(out_path, pretty=True)
+        print(f"📄 Feed weggeschreven naar {out_path} ({count} items)")
+        return count > 0
+
+    # 🔧 HTML-scraping als fallback
     sources = cfg.get("sources")
     if not sources:
         sources = [{
@@ -114,6 +142,7 @@ def build_feed_from_config(cfg_path, session):
             "date_format": cfg.get("date_format"),
         }]
 
+    total_items = 0
     for source in sources:
         src_url = source.get("url")
         if not src_url:
@@ -126,8 +155,6 @@ def build_feed_from_config(cfg_path, session):
             continue
 
         soup = BeautifulSoup(html, "html.parser")
-
-        # ✅ Fix: item_selector kan lijst zijn → loop erdoor
         items = []
         for sel in as_list(source.get("item_selector") or "article, li, div"):
             found = soup.select(sel)
