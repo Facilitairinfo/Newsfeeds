@@ -1,10 +1,30 @@
-name: FM Haaglanden
-url: https://www.fmhaaglanden.nl/actueel/nieuws
+title: FMHaaglanden Nieuws
 link: https://www.fmhaaglanden.nl/actueel/nieuws
-item_selector: li.news-list__item
-title_selector: h3.overview__title a               # titel staat in <h3 class="overview__title"><a>
-link_selector: h3.overview__title a                # link zit in hetzelfde <a>-element als de titel
-summary_selector: div.overview__intro p            # korte samenvatting in <div class="overview__intro"><p>
-date_selector: time.overview__date                 # publicatiedatum in <time class="overview__date">
-date_attr: datetime                                # datumwaarde uit het datetime-attribuut
-date_format: "%Y-%m-%dT%H:%M:%S%z"                  # ISO 8601 met tijdzone-offset
+description: Actueel nieuws van FMHaaglanden
+language: nl
+max_items: 12
+sources:
+  - url: https://www.fmhaaglanden.nl/actueel/nieuws
+    item_selector:
+      - "article"
+      - "ul.news-list > li"
+      - ".news-list__item"
+    title_selector:
+      - "h2 a"
+      - "h3 a"
+      - ".news-title a"
+      - "a"
+    link_selector:
+      - "h2 a"
+      - "h3 a"
+      - ".news-title a"
+      - "a"
+    summary_selector:
+      - ".teaser"
+      - ".intro"
+      - "p"
+    date_selector:
+      - "time"
+      - ".date"
+      - ".news-date"
+    date_attr: datetime
