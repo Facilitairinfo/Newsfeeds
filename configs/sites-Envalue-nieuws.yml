@@ -1,10 +1,28 @@
-name: Envalue Nieuws
-url: https://www.envalue.com/nl/inzichten/
+title: Envalue Inzichten
 link: https://www.envalue.com/nl/inzichten/
-item_selector: article.post-item
-title_selector: h2.entry-title a        # titel staat in <h2 class="entry-title"><a>
-link_selector: h2.entry-title a         # link zit in hetzelfde <a>-element als de titel
-summary_selector: div.entry-summary p   # korte samenvatting in <div class="entry-summary"><p>
-date_selector: time.entry-date          # publicatiedatum in <time class="entry-date">
-date_attr: datetime                     # datumwaarde uit het datetime-attribuut
-date_format: "%Y-%m-%dT%H:%M:%S%z"      # ISO 8601 met tijdzone-offset
+description: Laatste inzichten en artikelen van Envalue
+language: nl
+max_items: 12
+sources:
+  - url: https://www.envalue.com/nl/inzichten/
+    item_selector:
+      - "article"
+      - ".archive-list article"
+      - ".posts article"
+    title_selector:
+      - "h2 a"
+      - "h3 a"
+      - "a[rel='bookmark']"
+    link_selector:
+      - "h2 a"
+      - "h3 a"
+      - "a[rel='bookmark']"
+    summary_selector:
+      - ".excerpt"
+      - ".intro"
+      - "p"
+    date_selector:
+      - "time"
+      - ".date"
+      - ".post-meta time"
+    date_attr: datetime
