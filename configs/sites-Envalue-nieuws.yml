@@ -1,6 +1,7 @@
 name: Envalue Nieuws
 url: https://www.envalue.com/nl/inzichten/
-item_selector: article.post-item        # elk nieuwsitem staat in een <article> met class "post-item"
+link: https://www.envalue.com/nl/inzichten/
+item_selector: article.post-item
 title_selector: h2.entry-title a        # titel staat in <h2 class="entry-title"><a>
 link_selector: h2.entry-title a         # link zit in hetzelfde <a>-element als de titel
 summary_selector: div.entry-summary p   # korte samenvatting in <div class="entry-summary"><p>
