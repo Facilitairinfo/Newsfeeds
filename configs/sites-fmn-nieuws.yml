@@ -1,6 +1,7 @@
 name: FMN Nieuws
-url: https://fmn.nl/actueel/nieuws
-item_selector: article.overview__item             # elk nieuwsitem staat in een <article> met class "overview__item"
+url: https://fmn.nl/nieuws
+link: https://fmn.nl/nieuws
+item_selector: article.article-card
 title_selector: h3.overview__title a               # titel staat in <h3 class="overview__title"><a>
 link_selector: h3.overview__title a                # link zit in hetzelfde <a>-element als de titel
 summary_selector: div.overview__intro p            # korte samenvatting in <div class="overview__intro"><p>
