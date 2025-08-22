@@ -32,6 +32,6 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git add docs/*.xml
+          find docs -name '*.xml' -exec git add {} +
           git commit -m "Update RSS feeds [auto]" || echo "No changes to commit"
           git push origin main
