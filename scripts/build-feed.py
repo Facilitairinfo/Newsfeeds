@@ -8,8 +8,7 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from feedgen.feed import FeedGenerator
 from datetime import datetime
-from zoneinfo import ZoneInfo  # <-- toegevoegd
-
+from zoneinfo import ZoneInfo
 import dateparser
 
 CONFIG_DIR = "configs"
@@ -97,7 +96,6 @@ def build_feed_from_config(cfg_path, session):
     fg.link(href=main_link, rel="alternate")
     fg.description(cfg.get("description", f"Feed voor {feed_name}"))
     fg.language(cfg.get("language", "nl"))
-    # ⬇ aangepast naar Amsterdam tijdzone
     fg.lastBuildDate(datetime.now(ZoneInfo("Europe/Amsterdam")))
 
     max_items = int(cfg.get("max_items", 12))
@@ -128,10 +126,16 @@ def build_feed_from_config(cfg_path, session):
             continue
 
         soup = BeautifulSoup(html, "html.parser")
-        items = soup.select(source.get("item_selector") or "article, li, div")
+
+        # ✅ Fix: item_selector kan lijst zijn → loop erdoor
+        items = []
+        for sel in as_list(source.get("item_selector") or "article, li, div"):
+            found = soup.select(sel)
+            if found:
+                items.extend(found)
 
         if not items:
-            print(f"⚠ Geen items gevonden met selector '{source.get('item_selector')}' op {src_url}")
+            print(f"⚠ Geen items gevonden met selector(s) {source.get('item_selector')} op {src_url}")
             continue
 
         count = 0
