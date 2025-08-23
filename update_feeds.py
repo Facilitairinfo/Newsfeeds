@@ -6,30 +6,25 @@ from datetime import datetime
 FEEDS_DIR = "docs"
 BASE_URL = "https://facilitairinfo.github.io/Newsfeeds"
 
-# Optioneel: mapping xml-bestand → website
-# Als je geen mapping hebt, blijft website leeg of vullen we 'Onbekend'
-website_mapping = {
-    "voorbeeld1.xml": "https://voorbeeld1.nl",
-    "voorbeeld2.xml": "https://voorbeeld2.nl",
-    # Voeg hier je eigen mappings toe als je wil dat de 'website'-kolom exact klopt
-}
-
 status_list = []
 
-# Loop door alle .xml bestanden in docs/
 for file_name in os.listdir(FEEDS_DIR):
     if file_name.lower().endswith(".xml"):
         feed_path = os.path.join(FEEDS_DIR, file_name)
         feed_url = f"{BASE_URL}/{file_name}"
-        
+
         try:
             parsed = feedparser.parse(feed_path)
-            status = bool(parsed.entries)
         except Exception:
+            parsed = None
+
+        if parsed and parsed.feed:
+            website = parsed.feed.get("link", "Onbekend")
+            status = bool(parsed.entries)
+        else:
+            website = "Onbekend"
             status = False
-        
-        website = website_mapping.get(file_name, "Onbekend")
-        
+
         status_list.append({
             "website": website,
             "feedbron": feed_url,
