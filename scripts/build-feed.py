@@ -1,10 +1,13 @@
 import os
 import yaml
-from datetime import timezone
+from datetime import datetime, timezone, timedelta
 from feedgen.feed import FeedGenerator
 
 CONFIG_DIR = os.path.join(os.path.dirname(__file__), '..', 'configs')
 DOCS_DIR = os.path.join(os.path.dirname(__file__), '..', 'docs')
+
+# In Nederland: augustus = CEST (UTC+2)
+CEST = timezone(timedelta(hours=2))
 
 def build_feed_from_config(cfg_path):
     with open(cfg_path, 'r', encoding='utf-8') as f:
@@ -13,8 +16,8 @@ def build_feed_from_config(cfg_path):
     fg = FeedGenerator()
     fg.title(config.get('title', 'Onbekende titel'))
 
-    feed_link = config.get('link') or "https://voorbeeld.nl/"
-    feed_desc = config.get('description') or "Automatisch gegenereerde feed"
+    feed_link = config.get('link') or "https://cfp.nl/nieuws-en-cases/"
+    feed_desc = config.get('description') or "Laatste nieuws en cases van CFP Green Buildings"
     fg.link(href=feed_link, rel='alternate')
     fg.description(feed_desc)
 
@@ -25,8 +28,21 @@ def build_feed_from_config(cfg_path):
         fe.description(it.get('description', ''))
 
         pub_date = it.get('pubDate')
-        if hasattr(pub_date, 'tzinfo') and pub_date.tzinfo is None:
-            pub_date = pub_date.replace(tzinfo=timezone.utc)
+
+        # Strings als "21-08-2025" omzetten
+        if isinstance(pub_date, str):
+            try:
+                pub_date = datetime.strptime(pub_date, "%d-%m-%Y")
+            except ValueError:
+                try:
+                    pub_date = datetime.fromisoformat(pub_date)
+                except ValueError:
+                    pub_date = None
+
+        # Voeg tijdzone toe indien nodig
+        if hasattr(pub_date, 'tzinfo') and pub_date and pub_date.tzinfo is None:
+            pub_date = pub_date.replace(tzinfo=CEST)
+
         if pub_date:
             fe.pubDate(pub_date)
 
