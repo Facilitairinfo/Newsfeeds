@@ -1,32 +1,91 @@
-[
-  {
-    "website": "https://cfp.nl/nieuws-en-cases/",
-    "feedbron": "https://facilitairinfo.github.io/Newsfeeds/sites-cfp-nieuws.xml",
-    "status": true,
-    "last_checked": "2025-08-23 18:27"
-  },
-  {
-    "website": "https://www.werkenvoornederland.nl/vacatures?type=vacature&vakgebied=CVG.09&werkdenkniveau=CWD.08,CWD.04",
-    "feedbron": "https://facilitairinfo.github.io/Newsfeeds/sites-werkenvoornederland-nieuws.xml",
-    "status": false,
-    "last_checked": "2025-08-23 18:27"
-  },
-  {
-    "website": "https://www.envalue.com/nl/inzichten/",
-    "feedbron": "https://facilitairinfo.github.io/Newsfeeds/sites-Envalue-nieuws.xml",
-    "status": true,
-    "last_checked": "2025-08-23 18:27"
-  },
-  {
-    "website": "https://www.fmhaaglanden.nl/actueel/nieuws",
-    "feedbron": "https://facilitairinfo.github.io/Newsfeeds/sites-fmhaaglanden.xml",
-    "status": false,
-    "last_checked": "2025-08-23 18:27"
-  },
-  {
-    "website": "https://fmn.nl/actueel/nieuws",
-    "feedbron": "https://facilitairinfo.github.io/Newsfeeds/sites-fmn-nieuws.xml",
-    "status": true,
-    "last_checked": "2025-08-23 18:27"
-  }
+#!/usr/bin/env python3
+import json
+import yaml
+import requests
+import datetime
+from pathlib import Path
+
+# ===== Instellingen =====
+CONFIGS = [
+    # Voeg hier al je feeds toe
+    ("configs/sites-werkenvoornederland-vacatures.yml",
+     "https://facilitairinfo.github.io/Newsfeeds/sites-werkenvoornederland-vacatures.xml"),
+    # ("configs/andere-feed.yml", "feed-URL"),
 ]
+
+TIMEOUT = 8  # seconden
+OUTFILE = Path("feedstatus.json")
+
+
+# ===== Functies =====
+def load_config(path):
+    with open(path, "r", encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+
+def check_json_feed(bron):
+    """
+    Voert GET uit naar bron['url'] met eventuele query params.
+    Controleert of response JSON bevat en minimaal 1 item oplevert.
+    """
+    try:
+        resp = requests.get(bron["url"], params=bron.get("params", {}), timeout=TIMEOUT)
+        resp.raise_for_status()
+        data = resp.json()
+        # Flexibele check: data kan lijst zijn of dict met items
+        items = data if isinstance(data, list) else data.get("Items") or data.get("items") or []
+        ok = isinstance(items, list) and len(items) > 0
+        return ok
+    except Exception as e:
+        print(f"[FOUT] JSON-feed {bron['url']}: {e}")
+        return False
+
+
+def check_xml_feed(url):
+    """
+    Haalt XML/HTML-feed op en checkt of er minimaal één <item> of <entry> is.
+    """
+    try:
+        resp = requests.get(url, timeout=TIMEOUT)
+        resp.raise_for_status()
+        txt = resp.text.lower()
+        ok = ("<item" in txt) or ("<entry" in txt)
+        return ok
+    except Exception as e:
+        print(f"[FOUT] XML/HTML-feed {url}: {e}")
+        return False
+
+
+# ===== Hoofdprogramma =====
+def main():
+    statuslist = []
+    now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+
+    for cfg_path, feed_url in CONFIGS:
+        cfg = load_config(cfg_path)
+        siteinfo = cfg.get("site", {})
+        website_title = siteinfo.get("titel") or siteinfo.get("naam") or "Onbekend"
+
+        # Bepaal checktype
+        feed_type = siteinfo.get("type", "html").lower()
+        if feed_type == "json":
+            ok = check_json_feed(siteinfo.get("bron", {}))
+        else:
+            ok = check_xml_feed(feed_url)
+
+        statuslist.append({
+            "website": website_title,
+            "feedbron": feed_url,
+            "status": ok,
+            "last_checked": now_str
+        })
+
+    # Schrijf naar bestand
+    with open(OUTFILE, "w", encoding="utf-8") as f:
+        json.dump(statuslist, f, ensure_ascii=False, indent=2)
+
+    print(f"[OK] feedstatus.json bijgewerkt met {len(statuslist)} feeds.")
+
+
+if __name__ == "__main__":
+    main()
