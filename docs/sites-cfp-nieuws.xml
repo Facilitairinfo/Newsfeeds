@@ -1,12 +1,23 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0">
   <channel>
-    <title>CFP Nieuws en cases</title>
+    <title>CFP Nieuws</title>
     <link>https://cfp.nl/nieuws-en-cases/</link>
-    <description>Nieuws en cases van CFP Green Buildings</description>
+    <description>Laatste nieuws en cases van CFP Green Buildings</description>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>python-feedgen</generator>
-    <language>nl</language>
-    <lastBuildDate>Sat, 23 Aug 2025 09:28:13 +0200</lastBuildDate>
+    <lastBuildDate>Sat, 23 Aug 2025 13:55:51 +0000</lastBuildDate>
+    <item>
+      <title>CFP lanceert energiebesparingstool voor woningen in Polen in samenwerking met ING Bank Śląski</title>
+      <link>https://cfp.nl/nieuws-en-cases/cfp-lanceert-energiebesparingscalculator-voor-woningen-in-polen-in-samenwerking-met-ing-bank-slaski/</link>
+      <description>Nieuwe calculator helpt huiseigenaren in Polen met verduurzamen, in samenwerking met ING Bank Śląski.</description>
+      <pubDate>Tue, 19 Aug 2025 00:00:00 +0200</pubDate>
+    </item>
+    <item>
+      <title>CFP hernieuwt beveiligingscertificaat FSQS-NL voor 2025</title>
+      <link>https://cfp.nl/nieuws-en-cases/cfp-ontvangt-beveiligingscertificaat-fsqs/</link>
+      <description>CFP Green Buildings is FSQS geregistreerd en heeft hiervoor een certificaat ontvangen.</description>
+      <pubDate>Thu, 21 Aug 2025 00:00:00 +0200</pubDate>
+    </item>
   </channel>
 </rss>
