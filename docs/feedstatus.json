@@ -3,30 +3,30 @@
     "website": "https://cfp.nl/nieuws-en-cases/",
     "feedbron": "https://facilitairinfo.github.io/Newsfeeds/sites-cfp-nieuws.xml",
     "status": true,
-    "last_checked": "2025-08-23 17:49"
+    "last_checked": "2025-08-23 17:59"
   },
   {
     "website": "https://www.werkenvoornederland.nl/vacatures?type=vacature&vakgebied=CVG.09&werkdenkniveau=CWD.08,CWD.04",
     "feedbron": "https://facilitairinfo.github.io/Newsfeeds/sites-werkenvoornederland-nieuws.xml",
     "status": false,
-    "last_checked": "2025-08-23 17:49"
+    "last_checked": "2025-08-23 17:59"
   },
   {
     "website": "https://www.envalue.com/nl/inzichten/",
     "feedbron": "https://facilitairinfo.github.io/Newsfeeds/sites-Envalue-nieuws.xml",
     "status": true,
-    "last_checked": "2025-08-23 17:49"
+    "last_checked": "2025-08-23 17:59"
   },
   {
     "website": "https://www.fmhaaglanden.nl/actueel/nieuws",
     "feedbron": "https://facilitairinfo.github.io/Newsfeeds/sites-fmhaaglanden.xml",
     "status": false,
-    "last_checked": "2025-08-23 17:49"
+    "last_checked": "2025-08-23 17:59"
   },
   {
     "website": "https://fmn.nl/actueel/nieuws",
     "feedbron": "https://facilitairinfo.github.io/Newsfeeds/sites-fmn-nieuws.xml",
     "status": true,
-    "last_checked": "2025-08-23 17:49"
+    "last_checked": "2025-08-23 17:59"
   }
 ]
