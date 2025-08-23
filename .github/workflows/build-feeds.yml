@@ -2,7 +2,7 @@ name: Build All RSS feeds
 
 on:
   schedule:
-    - cron: '0 * * * *'
+    - cron: '0 * * * *'   # elk uur
   workflow_dispatch:
 
 jobs:
@@ -21,9 +21,6 @@ jobs:
       - name: 📦 Install dependencies
         run: pip install -r requirements.txt
 
-      - name: 📰 Run scraper
-        run: python scripts/scrape_cfp.py   # eventueel hernoemen naar generieke scraper
-
       - name: 🔍 Check if any YAML changed
         run: |
           if git diff --quiet configs/*.yml; then
@@ -31,9 +28,9 @@ jobs:
             echo "SKIP_ALL=true" >> $GITHUB_ENV
           fi
 
-      - name: 🛠 Build feeds
+      - name: 📰 Run scraper for all configs
         if: env.SKIP_ALL != 'true'
-        run: python scripts/build-feed.py   # moet alle configs aankunnen
+        run: python scripts/scrape_all.py
 
       - name: 🔍 Check if any feed XML changed
         if: env.SKIP_ALL != 'true'
