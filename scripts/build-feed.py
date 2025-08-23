@@ -21,7 +21,10 @@ def build_feed_from_config(cfg_path):
     fg.link(href=feed_link, rel='alternate')
     fg.description(feed_desc)
 
-    for it in config.get('items', []):
+    # Pak maximaal de laatste 6 items
+    items = config.get('items', [])[:6]
+
+    for it in items:
         fe = fg.add_entry()
         fe.title(it.get('title', ''))
         fe.link(href=it.get('link', ''))
@@ -29,7 +32,7 @@ def build_feed_from_config(cfg_path):
 
         pub_date = it.get('pubDate')
 
-        # Strings als "21-08-2025" omzetten
+        # Strings zoals "21-08-2025" of ISO-format naar datetime
         if isinstance(pub_date, str):
             try:
                 pub_date = datetime.strptime(pub_date, "%d-%m-%Y")
