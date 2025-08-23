@@ -3,26 +3,12 @@ link: https://cfp.nl/nieuws-en-cases/
 description: Nieuws en cases van CFP Green Buildings
 language: nl
 max_items: 12
+
 sources:
   - url: https://cfp.nl/nieuws-en-cases/
-    item_selector:
-      - "article"
-      - ".posts-list article"
-      - ".blog-grid article"
-    title_selector:
-      - "h2 a"
-      - "h3 a"
-      - ".entry-title a"
-    link_selector:
-      - "h2 a"
-      - "h3 a"
-      - ".entry-title a"
-    summary_selector:
-      - ".excerpt"
-      - ".entry-summary"
-      - "p"
-    date_selector:
-      - "time"
-      - ".entry-date"
-      - ".meta time"
-    date_attr: datetime
+    item_selector: ".news-list > article"      # elk nieuwsblok
+    title_selector: "h2 a"                     # titel + link
+    link_selector: "h2 a"                      # idem, link naar artikel
+    summary_selector: "p"                      # eerste alinea/intro
+    date_selector: ".date"                     # datumtekst in item
+    date_attr: text                            # datum als platte tekst
