@@ -1,37 +1,16 @@
-name: "CFP Nieuws & Cases (volledig, auto-paginatie, uniek)"
-description: "Alle nieuws- en caseberichten van cfp.nl/nieuws-en-cases, met automatische paginatie, sortering en zonder dubbelen"
-homepage: "https://cfp.nl/nieuws-en-cases/"
-feed_url: "https://jouwdomein.nl/sites-cfp-nieuws.xml"
-
-source:
-  start_urls:
-    - "https://cfp.nl/nieuws-en-cases/"
-  item_selector: "article.news-item"
-
-  fields:
-    title:
-      selector: "h2 a"
-    link:
-      selector: "h2 a"
-      attr: "href"
-      base_url: "https://cfp.nl"
-    date:
-      selector: ".date"
-      date_format: "%d-%m-%Y"
-    summary:
-      selector: "p"
-
-  pagination:
-    next_selector: ".pagination a.next"
-    max_pages: 50
-
-  unique:
-    field: "link"
-
-  sort:
-    by: "date"
-    order: "desc"
-
-output:
-  format: "rss"
-  file: "docs/sites-cfp-nieuws.xml"
+name: "CFP Nieuws en cases"
+url: "https://cfp.nl/nieuws-en-cases/"
+feed:
+  version: "https://www.rssboard.org/rss-specification"
+  generator: "python-feedgen"
+  title: "CFP Nieuws en cases"
+  link: "https://cfp.nl/nieuws-en-cases/"
+  description: "Nieuws en cases van CFP Green Buildings"
+  language: "nl"
+scraper:
+  item_selector: "div.news-overview-item"
+  title_selector: "h2 a, h3 a"
+  link_selector: "h2 a, h3 a"
+  date_selector: ".news-overview-date"
+  description_selector: "p"
+  date_format: "%d-%m-%Y"
