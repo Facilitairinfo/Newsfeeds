@@ -1,5 +1,4 @@
 import os
-import glob
 import yaml
 from datetime import timezone
 from feedgen.feed import FeedGenerator
@@ -13,10 +12,12 @@ def build_feed_from_config(cfg_path):
 
     fg = FeedGenerator()
     fg.title(config.get('title', 'Onbekende titel'))
-    fg.link(href=config.get('link', ''), rel='alternate')
-    fg.description(config.get('description', ''))
 
-    # Voorbeeld: items toevoegen
+    feed_link = config.get('link') or "https://voorbeeld.nl/"
+    feed_desc = config.get('description') or "Automatisch gegenereerde feed"
+    fg.link(href=feed_link, rel='alternate')
+    fg.description(feed_desc)
+
     for it in config.get('items', []):
         fe = fg.add_entry()
         fe.title(it.get('title', ''))
@@ -24,10 +25,8 @@ def build_feed_from_config(cfg_path):
         fe.description(it.get('description', ''))
 
         pub_date = it.get('pubDate')
-        # 🛡 Tijdzone-patch: zet naar UTC als tzinfo ontbreekt
         if hasattr(pub_date, 'tzinfo') and pub_date.tzinfo is None:
             pub_date = pub_date.replace(tzinfo=timezone.utc)
-
         if pub_date:
             fe.pubDate(pub_date)
 
@@ -36,11 +35,8 @@ def build_feed_from_config(cfg_path):
     print(f"✅ Feed gebouwd voor: {cfg_path}")
 
 def main():
-    # Alleen CFP-config draaien
     cfg_files = [os.path.join(CONFIG_DIR, "sites-cfp-nieuws.yml")]
-
     print(f"▶ Gevonden configs: {[os.path.basename(c) for c in cfg_files]}")
-
     for cfg_path in cfg_files:
         if os.path.exists(cfg_path):
             print(f"=== 🛠 Verwerk {os.path.basename(cfg_path)} ===")
