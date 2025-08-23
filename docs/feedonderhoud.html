@@ -1,70 +1,179 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Feedonderhoud</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background-color: #f2f2f2; }
-    tr:nth-child(even) { background-color: #fafafa; }
+    body { font-family: system-ui, Arial, sans-serif; margin: 20px; background:#fafafa; }
+    h1 { margin: 0 0 12px; }
+    .controls { display:flex; gap:8px; flex-wrap:wrap; margin: 0 0 12px; }
+    button { padding:8px 10px; border:1px solid #ccc; background:#fff; cursor:pointer; border-radius:6px; }
+    button:hover { background:#f0f0f0; }
+    table { border-collapse: collapse; width: 100%; background:#fff; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; user-select:none; cursor: pointer; }
+    tr:nth-child(even) { background-color: #fbfbfb; }
+    .status-true { color: #0a7c1f; font-weight: 600; }
+    .status-false { color: #c62828; font-weight: 600; }
+    .muted { color:#777; }
+    .error { color:#c62828; }
   </style>
 </head>
 <body>
-
   <h1>Feedonderhoud</h1>
-  <table>
+
+  <div class="controls">
+    <button data-filter="all">Toon alles</button>
+    <button data-filter="true">Alleen werkend</button>
+    <button data-filter="false">Alleen niet‑werkend</button>
+  </div>
+
+  <table id="feedsTable">
     <thead>
       <tr>
-        <th>#</th>
-        <th>Website</th>
-        <th>Feed‑bron</th>
-        <th>Status</th>
-        <th>Laatst gecheckt</th>
+        <th data-sort="index">#</th>
+        <th data-sort="website">Website</th>
+        <th data-sort="feedbron">Feed‑bron</th>
+        <th data-sort="status">Status</th>
+        <th data-sort="last_checked">Laatst gecheckt</th>
       </tr>
     </thead>
-    <tbody id="feed-table-body">
-      <tr><td colspan="5">Bezig met laden…</td></tr>
+    <tbody>
+      <tr><td colspan="5" class="muted">Bezig met laden…</td></tr>
     </tbody>
   </table>
 
   <script>
-    async function laadFeeds() {
-      const tbody = document.getElementById('feed-table-body');
-      tbody.innerHTML = '<tr><td colspan="5">Bezig met laden…</td></tr>';
+    let allFeeds = [];
+    let currentFeeds = [];
+    let sortState = { field: null, asc: true };
 
-      try {
-        const resp = await fetch('feedstatus.json');
-        if (!resp.ok) throw new Error(`HTTP-fout ${resp.status}`);
-        const data = await resp.json();
-
-        if (!Array.isArray(data) || data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5">Geen feeds gevonden</td></tr>';
-          return;
+    document.addEventListener('DOMContentLoaded', () => {
+      // Buttons voor filter
+      document.querySelectorAll('.controls button').forEach(btn => {
+        btn.addEventListener('click', () => filterFeeds(btn.dataset.filter));
+      });
+      // Klikbare kolomkoppen voor sorteren
+      document.querySelectorAll('#feedsTable thead th').forEach(th => {
+        const field = th.getAttribute('data-sort');
+        if (field && field !== 'index') {
+          th.addEventListener('click', () => sortTable(field));
         }
+      });
+      // Laden
+      laadFeeds();
+    });
 
-        tbody.innerHTML = '';
-        data.forEach((item, idx) => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${idx + 1}</td>
-            <td><a href="${item.website}" target="_blank" rel="noopener">${item.website}</a></td>
-            <td><a href="${item.feedbron}" target="_blank" rel="noopener">XML</a></td>
-            <td>${item.status ? '✅' : '❌'}</td>
-            <td>${item.last_checked || '-'}</td>
-          `;
-          tbody.appendChild(tr);
+    async function laadFeeds() {
+      const tbody = document.querySelector('#feedsTable tbody');
+      tbody.innerHTML = '<tr><td colspan="5" class="muted">Bezig met laden…</td></tr>';
+      try {
+        const resp = await fetch('feedstatus.json', { cache: 'no-store' });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        if (!Array.isArray(data)) throw new Error('JSON is geen array');
+
+        // Eventuele URL-correcties vóór renderen
+        const normalized = data.map(item => {
+          const feed = { ...item };
+          // Specifiek: werkenvoornederland -> vacatures.xml i.p.v. nieuws.xml
+          if (typeof feed.feedbron === 'string' &&
+              feed.feedbron.includes('sites-werkenvoornederland-nieuws.xml')) {
+            feed.feedbron = feed.feedbron.replace('-nieuws.xml', '-vacatures.xml');
+          }
+          return feed;
         });
 
+        allFeeds = normalized;
+        currentFeeds = normalized.slice();
+        renderTable(currentFeeds);
       } catch (err) {
-        console.error(err);
-        tbody.innerHTML = `<tr><td colspan="5" style="color:red;">Kon feedsstatus niet laden: ${err.message}</td></tr>`;
+        console.error('Fout bij laden feedstatus:', err);
+        tbody.innerHTML = `<tr><td colspan="5" class="error">Kon feedstatus niet laden: ${err.message}</td></tr>`;
       }
     }
 
-    laadFeeds();
-  </script>
+    function renderTable(feeds) {
+      const tbody = document.querySelector('#feedsTable tbody');
+      tbody.innerHTML = '';
+      if (!feeds.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="muted">Geen feedgegevens gevonden.</td></tr>';
+        return;
+      }
+      feeds.forEach((feed, index) => {
+        const website = safeText(feed.website);
+        const feedbron = safeText(feed.feedbron);
+        const statusBool = Boolean(feed.status);
+        const lastChecked = safeText(feed.last_checked || '-');
 
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${website ? `<a href="${website}" target="_blank" rel="noopener">${website}</a>` : '-'}</td>
+          <td>${feedbron ? `<a href="${feedbron}" target="_blank" rel="noopener">XML</a>` : '-'}</td>
+          <td class="${statusBool ? 'status-true' : 'status-false'}">${statusBool ? 'JA' : 'NEE'}</td>
+          <td>${lastChecked}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterFeeds(filter) {
+      if (filter === 'all') {
+        currentFeeds = allFeeds.slice();
+      } else if (filter === 'true') {
+        currentFeeds = allFeeds.filter(f => Boolean(f.status) === true);
+      } else if (filter === 'false') {
+        currentFeeds = allFeeds.filter(f => Boolean(f.status) === false);
+      }
+      // Herstel sorteervolgorde na filteren als er al een sortering was
+      if (sortState.field) {
+        applySort(sortState.field, sortState.asc);
+      } else {
+        renderTable(currentFeeds);
+      }
+    }
+
+    function sortTable(field) {
+      // Toggle richting als zelfde kolom opnieuw
+      const asc = sortState.field === field ? !sortState.asc : true;
+      sortState = { field, asc };
+      applySort(field, asc);
+    }
+
+    function applySort(field, asc) {
+      const collator = new Intl.Collator('nl', { numeric: true, sensitivity: 'base' });
+      currentFeeds.sort((a, b) => {
+        const va = a[field];
+        const vb = b[field];
+
+        // Status als boolean sorteren
+        if (field === 'status') {
+          return asc ? (Number(Boolean(va)) - Number(Boolean(vb)))
+                     : (Number(Boolean(vb)) - Number(Boolean(va)));
+        }
+
+        // Strings vergeleken met collator, anders fallback
+        if (typeof va === 'string' && typeof vb === 'string') {
+          return asc ? collator.compare(va, vb) : collator.compare(vb, va);
+        }
+        if (va == null && vb == null) return 0;
+        if (va == null) return asc ? 1 : -1;
+        if (vb == null) return asc ? -1 : 1;
+
+        // Datums als tekst sorteren (YYYY-MM-DD HH:MM) werkt lexicografisch prima
+        return asc ? (va > vb ? 1 : (va < vb ? -1 : 0))
+                   : (va < vb ? 1 : (va > vb ? -1 : 0));
+      });
+      renderTable(currentFeeds);
+    }
+
+    function safeText(v) {
+      if (v == null) return '';
+      if (typeof v === 'string') return v;
+      try { return String(v); } catch { return ''; }
+    }
+  </script>
 </body>
 </html>
