@@ -1,5 +1,5 @@
-name: "CFP Nieuws & Cases (volledig, auto-paginatie)"
-description: "Alle nieuws- en caseberichten van cfp.nl/nieuws-en-cases, met automatische paginatie en sortering"
+name: "CFP Nieuws & Cases (volledig, auto-paginatie, uniek)"
+description: "Alle nieuws- en caseberichten van cfp.nl/nieuws-en-cases, met automatische paginatie, sortering en zonder dubbelen"
 homepage: "https://cfp.nl/nieuws-en-cases/"
 feed_url: "https://jouwdomein.nl/sites-cfp-nieuws.xml"
 
@@ -22,7 +22,10 @@ source:
 
   pagination:
     next_selector: ".pagination a.next"
-    max_pages: 50   # vangnet; stopt sowieso als er geen 'volgende' meer is
+    max_pages: 50
+
+  unique:
+    field: "link"
 
   sort:
     by: "date"
