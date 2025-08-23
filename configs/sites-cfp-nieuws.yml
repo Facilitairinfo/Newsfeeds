@@ -6,7 +6,7 @@ scraper:
   link_selector: "a.blog_article__content_holder@href"
   date_selector: ".blog_article__content_holder__meta_data__date"
   date_format: "%d-%m-%Y"
-  description_selector: ".blog_article__content_holder__content p"
+  description_selector: ".blog_article__content_holder__content p, h6.blog_article__content_holder__title"
   category_selector: ".blog_article__content_holder__meta_data__term"
 feed:
   title: "Nieuws & Cases - CFP"
