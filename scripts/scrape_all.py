@@ -14,7 +14,6 @@ def main():
     print(f"🔍 {len(configs)} configs gevonden...")
     for config in configs:
         print(f"📡 Scrapen: {config.stem}")
-        # aanroepen van je bestaande scraper met --config parameter
         subprocess.run(
             [sys.executable, str(SCRIPT_DIR / "scrape_site.py"), "--config", str(config)],
             check=True
