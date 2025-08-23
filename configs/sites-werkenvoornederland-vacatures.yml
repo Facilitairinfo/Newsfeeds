@@ -8,10 +8,10 @@ site:
       Type: "vacature"
       Vakgebied: "CVG.09"
       WerkDenkniveau: "CWD.08,CWD.04"
-      PageSize: 6                      # Maximaal 6 resultaten per call
+      PageSize: 6                      # Max 6 resultaten per call
       PageNumber: 1
       Sortering: "PublicatieDatum_desc" # Nieuwste eerst
-      PublicatieDatumVanaf: "{{ vandaag_minus_2_dagen }}" # Dynamisch: vandaag - 2 dagen
+      PublicatieDatumVanaf: "{{ vandaag_minus_2_dagen }}"
   mapping:
     titel: "Titel"
     link: "Url"
