@@ -6,7 +6,7 @@ feed_url: "https://jouwdomein.nl/sites-cfp-nieuws.xml"
 source:
   start_urls:
     - "https://cfp.nl/nieuws-en-cases/"
-  item_selector: ".news-list article"
+  item_selector: "article.news-item"
 
   fields:
     title:
@@ -14,6 +14,7 @@ source:
     link:
       selector: "h2 a"
       attr: "href"
+      base_url: "https://cfp.nl"
     date:
       selector: ".date"
       date_format: "%d-%m-%Y"
