@@ -1,47 +1,44 @@
-name: Build RSS Feeds
+name: Build CFP RSS feed
 
 on:
-  workflow_dispatch:
   schedule:
-    - cron: '0 * * * *'  # elk uur uitvoeren
-
-permissions:
-  contents: write
+    - cron: '0 * * * *' # ieder uur
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
+      - name: 📥 Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: 🐍 Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.x'
 
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Ensure docs/ directory exists
-        run: mkdir -p docs
+      - name: 📰 Run scraper
+        run: python scripts/scrape_cfp.py
 
-      # 🔹 Nieuwe stap: CFP-scraper draaien
-      - name: Scrape CFP nieuws en update YAML
+      - name: 🛠 Build feed
+        run: python scripts/build-feed.py
+
+      - name: 🔍 Check for changes
         run: |
-          python scripts/scrape_cfp.py
+          if git diff --quiet docs/sites-cfp-nieuws.xml; then
+            echo "Geen wijzigingen in feed — commit wordt overgeslagen."
+            echo "SKIP_COMMIT=true" >> $GITHUB_ENV
+          fi
 
-      # 🔹 Feed builder alleen voor CFP-config
-      - name: Run feed builder (CFP only)
-        run: |
-          echo "▶ Start feed generation"
-          python scripts/build-feed.py || echo "⚠ Feed generation had errors, continuing..."
-
-      - name: Commit and push updated feeds
+      - name: 💾 Commit & push feed
+        if: env.SKIP_COMMIT != 'true'
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          find docs -name '*.xml' -exec git add {} +
-          git add configs/sites-cfp-nieuws.yml
-          git commit -m "Update CFP RSS feed [auto]" || echo "No changes to commit"
-          git push origin main
+          git add docs/sites-cfp-nieuws.xml
+          git commit -m "Update CFP RSS feed [auto]"
+          git push
