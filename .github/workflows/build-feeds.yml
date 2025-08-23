@@ -1,8 +1,8 @@
-name: Build CFP RSS feed
+name: Build All RSS feeds
 
 on:
   schedule:
-    - cron: '0 * * * *' # ieder uur
+    - cron: '0 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -22,32 +22,32 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: 📰 Run scraper
-        run: python scripts/scrape_cfp.py
+        run: python scripts/scrape_cfp.py   # eventueel hernoemen naar generieke scraper
 
-      - name: 🔍 Check if YAML changed
+      - name: 🔍 Check if any YAML changed
         run: |
-          if git diff --quiet configs/sites-cfp-nieuws.yml; then
+          if git diff --quiet configs/*.yml; then
             echo "Geen wijzigingen in YAML — hele job wordt overgeslagen."
             echo "SKIP_ALL=true" >> $GITHUB_ENV
           fi
 
-      - name: 🛠 Build feed
+      - name: 🛠 Build feeds
         if: env.SKIP_ALL != 'true'
-        run: python scripts/build-feed.py
+        run: python scripts/build-feed.py   # moet alle configs aankunnen
 
-      - name: 🔍 Check if feed XML changed
+      - name: 🔍 Check if any feed XML changed
         if: env.SKIP_ALL != 'true'
         run: |
-          if git diff --quiet docs/sites-cfp-nieuws.xml; then
+          if git diff --quiet docs/sites-*.xml; then
             echo "Geen wijzigingen in feed — commit wordt overgeslagen."
             echo "SKIP_COMMIT=true" >> $GITHUB_ENV
           fi
 
-      - name: 💾 Commit & push feed
+      - name: 💾 Commit & push feeds
         if: env.SKIP_COMMIT != 'true' && env.SKIP_ALL != 'true'
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git add docs/sites-cfp-nieuws.xml configs/sites-cfp-nieuws.yml
-          git commit -m "Update CFP RSS feed [auto]"
+          git add docs/sites-*.xml configs/*.yml
+          git commit -m "Update feeds [auto]"
           git push
