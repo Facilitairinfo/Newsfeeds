@@ -1,6 +1,6 @@
-# configs/sites-werkenvoornederland-vacatures.yml
 site:
-  naam: Werken voor Nederland - Vacatures
+  naam: werkenvoornederland-vacatures
+  titel: Werken voor Nederland – Vacatures
   type: json
   bron:
     url: "https://api.cso20.net/v1/JobAPI/GetJobs"
@@ -8,10 +8,10 @@ site:
       Type: "vacature"
       Vakgebied: "CVG.09"
       WerkDenkniveau: "CWD.08,CWD.04"
-      PageSize: 6                        # maximaal 6 resultaten
+      PageSize: 6                      # Maximaal 6 resultaten per call
       PageNumber: 1
-      Sortering: "PublicatieDatum_desc"   # nieuwste eerst
-      PublicatieDatumVanaf: "{{ vandaag_minus_2_dagen }}" # dynamisch: vandaag - 2 dagen
+      Sortering: "PublicatieDatum_desc" # Nieuwste eerst
+      PublicatieDatumVanaf: "{{ vandaag_minus_2_dagen }}" # Dynamisch: vandaag - 2 dagen
   mapping:
     titel: "Titel"
     link: "Url"
@@ -19,6 +19,8 @@ site:
     publicatie_datum: "PublicatieDatum"
     locatie: "Standplaats"
   opties:
+    output: "docs/sites-werkenvoornederland-vacatures.xml"
+    feed_id: "https://facilitairinfo.github.io/Newsfeeds/sites-werkenvoornederland-vacatures.xml"
     paginering:
       parameter: "PageNumber"
       start: 1
