@@ -8,10 +8,10 @@ site:
       Type: "vacature"
       Vakgebied: "CVG.09"
       WerkDenkniveau: "CWD.08,CWD.04"
-      PageSize: 50
+      PageSize: 6                        # maximaal 6 resultaten
       PageNumber: 1
       Sortering: "PublicatieDatum_desc"   # nieuwste eerst
-      PublicatieDatumVanaf: "2025-08-01" # optioneel: pas aan voor 'versheid'
+      PublicatieDatumVanaf: "{{ vandaag_minus_2_dagen }}" # dynamisch: vandaag - 2 dagen
   mapping:
     titel: "Titel"
     link: "Url"
@@ -22,6 +22,6 @@ site:
     paginering:
       parameter: "PageNumber"
       start: 1
-      max_paginas: 10
+      max_paginas: 1
     datumformaat: "yyyy-MM-dd'T'HH:mm:ss"
     encoding: "UTF-8"
