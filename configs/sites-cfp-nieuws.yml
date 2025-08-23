@@ -1,24 +1,15 @@
-name: "CFP Nieuws en cases"
+name: "cfp-nieuws"
 url: "https://cfp.nl/nieuws-en-cases/"
-feed:
-  version: "https://www.rssboard.org/rss-specification"
-  generator: "python-feedgen"
-  title: "CFP Nieuws en cases"
-  link: "https://cfp.nl/nieuws-en-cases/"
-  description: "Nieuws en cases van CFP Green Buildings"
-  language: "nl"
-
 scraper:
-  # Elk nieuwsitem
   item_selector: "div.blog_article"
-  # Titeltekst in <h6>
   title_selector: "h6.blog_article__content_holder__title"
-  # Link naar volledig artikel (href van <a>)
   link_selector: "a.blog_article__content_holder@href"
-  # Datum
   date_selector: ".blog_article__content_holder__meta_data__date"
   date_format: "%d-%m-%Y"
-  # Beschrijving / intro
   description_selector: ".blog_article__content_holder__content p"
-  # Categorie (optioneel)
   category_selector: ".blog_article__content_holder__meta_data__term"
+feed:
+  title: "Nieuws & Cases - CFP"
+  link: "https://cfp.nl/nieuws-en-cases/"
+  description: "Laatste nieuws en cases van CFP Green Buildings"
+  language: "nl"
