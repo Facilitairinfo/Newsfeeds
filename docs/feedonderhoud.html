@@ -1,70 +1,57 @@
-<!DOCTYPE html>
-<html lang="nl">
-<head>
-  <meta charset="UTF-8">
-  <title>Feed Onderhoud</title>
-  <style>
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ccc; padding: 8px; }
-    th { background: #eee; }
-    .true { color: green; font-weight: bold; }
-    .false { color: red; font-weight: bold; }
-    button { margin-right: 10px; margin-bottom: 10px; }
-  </style>
-</head>
-<body>
-  <h1>Overzicht feeds</h1>
-  <div>
-    <button onclick="filterFeeds('all')">Toon alles</button>
-    <button onclick="filterFeeds(true)">Alleen werkend</button>
-    <button onclick="filterFeeds(false)">Alleen niet-werkend</button>
-  </div>
-  <table id="feedsTable">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Website</th>
-        <th>Feed‑bron</th>
-        <th>Status</th>
-        <th>Laatst gecheckt</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+...
+<thead>
+  <tr>
+    <th>#</th>
+    <th onclick="sortTable('website')">Website ⬍</th>
+    <th onclick="sortTable('feedbron')">Feed‑bron ⬍</th>
+    <th onclick="sortTable('status')">Status ⬍</th>
+    <th onclick="sortTable('last_checked')">Laatst gecheckt ⬍</th>
+  </tr>
+</thead>
+...
+<script>
+  let allFeeds = [];
+  let sortState = {};
 
-  <script>
-    let allFeeds = [];
+  fetch('feedstatus.json')
+    .then(res => res.json())
+    .then(data => {
+      allFeeds = data;
+      renderTable(allFeeds);
+    });
 
-    fetch('feedstatus.json')
-      .then(res => res.json())
-      .then(data => {
-        allFeeds = data;
-        renderTable(allFeeds);
-      });
+  function renderTable(feeds) {
+    const tbody = document.querySelector('#feedsTable tbody');
+    tbody.innerHTML = '';
+    feeds.forEach((feed, index) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${index + 1}</td>
+        <td><a href="${feed.website}" target="_blank">${feed.website}</a></td>
+        <td><a href="${feed.feedbron}" target="_blank">XML</a></td>
+        <td class="${feed.status}">${feed.status ? 'JA' : 'NEE'}</td>
+        <td>${feed.last_checked}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
 
-    function renderTable(feeds) {
-      const tbody = document.querySelector('#feedsTable tbody');
-      tbody.innerHTML = '';
-      feeds.forEach((feed, index) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${index + 1}</td>
-          <td><a href="${feed.website}" target="_blank">${feed.website}</a></td>
-          <td><a href="${feed.feedbron}" target="_blank">XML</a></td>
-          <td class="${feed.status}">${feed.status ? 'JA' : 'NEE'}</td>
-          <td>${feed.last_checked}</td>
-        `;
-        tbody.appendChild(tr);
-      });
+  function filterFeeds(status) {
+    if (status === 'all') {
+      renderTable(allFeeds);
+    } else {
+      renderTable(allFeeds.filter(f => f.status === status));
     }
+  }
 
-    function filterFeeds(status) {
-      if (status === 'all') {
-        renderTable(allFeeds);
-      } else {
-        renderTable(allFeeds.filter(f => f.status === status));
-      }
-    }
-  </script>
-</body>
-</html>
+  function sortTable(field) {
+    const asc = !sortState[field];
+    sortState = {[field]: asc};
+    allFeeds.sort((a, b) => {
+      if (a[field] < b[field]) return asc ? -1 : 1;
+      if (a[field] > b[field]) return asc ? 1 : -1;
+      return 0;
+    });
+    renderTable(allFeeds);
+  }
+</script>
