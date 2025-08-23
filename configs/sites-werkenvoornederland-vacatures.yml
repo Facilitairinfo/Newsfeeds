@@ -1,0 +1,26 @@
+# configs/sites-werkenvoornederland-vacatures.yml
+site:
+  naam: Werken voor Nederland - Vacatures
+  type: json
+  bron:
+    url: "https://api.cso20.net/v1/JobAPI/GetJobs"
+    params:
+      Type: "vacature"
+      Vakgebied: "CVG.09"
+      WerkDenkniveau: "CWD.08,CWD.04"
+      PageSize: 50
+      PageNumber: 1
+      Sortering: "PublicatieDatum_desc"
+  mapping:
+    titel: "Titel"
+    link: "Url"
+    organisatie: "Organisatie"
+    publicatie_datum: "PublicatieDatum"
+    locatie: "Standplaats"
+  opties:
+    paginering:
+      parameter: "PageNumber"
+      start: 1
+      max_paginas: 10
+    datumformaat: "yyyy-MM-dd'T'HH:mm:ss"
+    encoding: "UTF-8"
