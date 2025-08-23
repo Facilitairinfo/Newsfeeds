@@ -1,14 +1,33 @@
-title: CFP Nieuws en cases
-link: https://cfp.nl/nieuws-en-cases/
-description: Nieuws en cases van CFP Green Buildings
-language: nl
-max_items: 12
+name: "CFP Nieuws & Cases (volledig, auto-paginatie)"
+description: "Alle nieuws- en caseberichten van cfp.nl/nieuws-en-cases, met automatische paginatie en sortering"
+homepage: "https://cfp.nl/nieuws-en-cases/"
+feed_url: "https://jouwdomein.nl/sites-cfp-nieuws.xml"
 
-sources:
-  - url: https://cfp.nl/nieuws-en-cases/
-    item_selector: ".news-list > article"      # elk nieuwsblok
-    title_selector: "h2 a"                     # titel + link
-    link_selector: "h2 a"                      # idem, link naar artikel
-    summary_selector: "p"                      # eerste alinea/intro
-    date_selector: ".date"                     # datumtekst in item
-    date_attr: text                            # datum als platte tekst
+source:
+  start_urls:
+    - "https://cfp.nl/nieuws-en-cases/"
+  item_selector: ".news-list article"
+
+  fields:
+    title:
+      selector: "h2 a"
+    link:
+      selector: "h2 a"
+      attr: "href"
+    date:
+      selector: ".date"
+      date_format: "%d-%m-%Y"
+    summary:
+      selector: "p"
+
+  pagination:
+    next_selector: ".pagination a.next"
+    max_pages: 50   # vangnet; stopt sowieso als er geen 'volgende' meer is
+
+  sort:
+    by: "date"
+    order: "desc"
+
+output:
+  format: "rss"
+  file: "docs/sites-cfp-nieuws.xml"
