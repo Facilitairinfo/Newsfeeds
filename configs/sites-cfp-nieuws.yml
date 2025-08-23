@@ -9,10 +9,16 @@ feed:
   language: "nl"
 
 scraper:
-  item_selector: "div.news-overview-item"
-  title_selector: "h2 a, h3 a"
-  link_selector: "h2 a@href, h3 a@href"
-  date_selector: ".news-overview-date"
-  description_selector: ".news-overview-intro p, p"
-  category_selector: ".news-overview-category"
+  # Elk nieuwsitem
+  item_selector: "div.blog_article"
+  # Titeltekst in <h6>
+  title_selector: "h6.blog_article__content_holder__title"
+  # Link naar volledig artikel (href van <a>)
+  link_selector: "a.blog_article__content_holder@href"
+  # Datum
+  date_selector: ".blog_article__content_holder__meta_data__date"
   date_format: "%d-%m-%Y"
+  # Beschrijving / intro
+  description_selector: ".blog_article__content_holder__content p"
+  # Categorie (optioneel)
+  category_selector: ".blog_article__content_holder__meta_data__term"
