@@ -1,56 +1,39 @@
-import feedparser
-import json
-from datetime import datetime
-from pathlib import Path
 import os
+import json
+import feedparser
+from datetime import datetime
 
-# Pad naar de docs-map (waar je .xml feeds staan)
-docs_path = Path("docs")
-resultaten = []
+# Pad naar je feeds
+FEEDS_DIR = "docs"
 
-for xml_file in docs_path.glob("*.xml"):
-    aangemaakt_op = datetime.fromtimestamp(
-        os.path.getctime(xml_file)
-    ).strftime("%Y-%m-%d")
-    status = "nee"
-    laatst_bijgewerkt = "onbekend"
-    laatst_succesvol = "nooit"
-    naam = xml_file.stem
-    bron_url = ""
+# Hier vul je jouw feedlijst in (website & feed_url)
+feeds = [
+    {"website": "https://voorbeeld.nl", "feed_url": "https://voorbeeld.nl/rss.xml"},
+    # meer feeds...
+]
 
+status_list = []
+
+for feed in feeds:
     try:
-        parsed = feedparser.parse(xml_file.open("rb").read())
+        d = feedparser.parse(feed["feed_url"])
+        status = bool(d.entries)  # True als er items zijn
+    except Exception:
+        status = False
 
-        # Titel uit de feed zelf
-        if parsed.feed.get("title"):
-            naam = parsed.feed.title
+    # Afleiden bestandsnaam (optioneel: robuuster maken via mapping)
+    xml_filename = os.path.basename(feed["feed_url"])  # bv. 'rss.xml'
+    feedbron_url = f"https://facilitairinfo.github.io/{xml_filename}"
 
-        # Originele bronlink uit de feed
-        if parsed.feed.get("link"):
-            bron_url = parsed.feed.link
-
-        # Controleren of er items in de feed zitten
-        if parsed.entries:
-            status = "ja"
-            entry_date = parsed.entries[0].get("published") or parsed.entries[0].get("updated")
-            if entry_date:
-                laatst_bijgewerkt = entry_date
-            laatst_succesvol = datetime.now().strftime("%Y-%m-%d %H:%M")
-
-    except Exception as e:
-        print(f"Fout bij {xml_file.name}: {e}")
-
-    resultaten.append({
-        "naam": naam,
+    status_list.append({
+        "website": feed["website"],
+        "feedbron": feedbron_url,
         "status": status,
-        "laatst_bijgewerkt": laatst_bijgewerkt,
-        "aangemaakt_op": aangemaakt_op,
-        "laatst_succesvol": laatst_succesvol,
-        "bron": bron_url
+        "last_checked": datetime.utcnow().strftime("%Y-%m-%d %H:%M"),
     })
 
-# Wegschrijven naar feedstatus.json
-with open(docs_path / "feedstatus.json", "w", encoding="utf-8") as f:
-    json.dump(resultaten, f, ensure_ascii=False, indent=2)
+# Opslaan naar JSON
+with open(os.path.join(FEEDS_DIR, "feedstatus.json"), "w", encoding="utf-8") as f:
+    json.dump(status_list, f, ensure_ascii=False, indent=2)
 
-print("feedstatus.json bijgewerkt met alle gevonden feeds.")
+print("feedstatus.json bijgewerkt met feedbron-links.")
