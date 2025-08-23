@@ -7,8 +7,8 @@
     table { border-collapse: collapse; width: 100%; }
     th, td { border: 1px solid #ccc; padding: 8px; }
     th { background: #eee; }
-    .ja { color: green; font-weight: bold; }
-    .nee { color: red; font-weight: bold; }
+    .true { color: green; font-weight: bold; }
+    .false { color: red; font-weight: bold; }
     button { margin-right: 10px; margin-bottom: 10px; }
   </style>
 </head>
@@ -16,19 +16,17 @@
   <h1>Overzicht feeds</h1>
   <div>
     <button onclick="filterFeeds('all')">Toon alles</button>
-    <button onclick="filterFeeds('ja')">Alleen werkend</button>
-    <button onclick="filterFeeds('nee')">Alleen niet-werkend</button>
+    <button onclick="filterFeeds(true)">Alleen werkend</button>
+    <button onclick="filterFeeds(false)">Alleen niet-werkend</button>
   </div>
   <table id="feedsTable">
     <thead>
       <tr>
         <th>#</th>
-        <th>Naam</th>
+        <th>Website</th>
+        <th>Feed‑bron</th>
         <th>Status</th>
-        <th>Laatst bijgewerkt</th>
-        <th>Aangemaakt op</th>
-        <th>Laatst succesvol</th>
-        <th>Bron</th>
+        <th>Laatst gecheckt</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -51,12 +49,10 @@
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${index + 1}</td>
-          <td>${feed.naam}</td>
-          <td class="${feed.status}">${feed.status.toUpperCase()}</td>
-          <td>${feed.laatst_bijgewerkt}</td>
-          <td>${feed.aangemaakt_op}</td>
-          <td>${feed.laatst_succesvol}</td>
-          <td><a href="${feed.bron}" target="_blank">Open bron</a></td>
+          <td><a href="${feed.website}" target="_blank">${feed.website}</a></td>
+          <td><a href="${feed.feedbron}" target="_blank">XML</a></td>
+          <td class="${feed.status}">${feed.status ? 'JA' : 'NEE'}</td>
+          <td>${feed.last_checked}</td>
         `;
         tbody.appendChild(tr);
       });
