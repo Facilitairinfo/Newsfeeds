@@ -1,57 +1,92 @@
-...
-<thead>
-  <tr>
-    <th>#</th>
-    <th onclick="sortTable('website')">Website ⬍</th>
-    <th onclick="sortTable('feedbron')">Feed‑bron ⬍</th>
-    <th onclick="sortTable('status')">Status ⬍</th>
-    <th onclick="sortTable('last_checked')">Laatst gecheckt ⬍</th>
-  </tr>
-</thead>
-...
-<script>
-  let allFeeds = [];
-  let sortState = {};
-
-  fetch('feedstatus.json')
-    .then(res => res.json())
-    .then(data => {
-      allFeeds = data;
-      renderTable(allFeeds);
-    });
-
-  function renderTable(feeds) {
-    const tbody = document.querySelector('#feedsTable tbody');
-    tbody.innerHTML = '';
-    feeds.forEach((feed, index) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${index + 1}</td>
-        <td><a href="${feed.website}" target="_blank">${feed.website}</a></td>
-        <td><a href="${feed.feedbron}" target="_blank">XML</a></td>
-        <td class="${feed.status}">${feed.status ? 'JA' : 'NEE'}</td>
-        <td>${feed.last_checked}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function filterFeeds(status) {
-    if (status === 'all') {
-      renderTable(allFeeds);
-    } else {
-      renderTable(allFeeds.filter(f => f.status === status));
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Feedonderhoud</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f8f8f8;
     }
-  }
+    h1 {
+      text-align: center;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background: #fff;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #eee;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    .niet-werkend {
+      background-color: #ffd4d4;
+    }
+  </style>
+</head>
+<body>
+  <h1>Feedonderhoud</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Website</th>
+        <th>Feed-bron</th>
+        <th>Status</th>
+        <th>Laatst gecheckt</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td colspan="5">Laden…</td></tr>
+    </tbody>
+  </table>
 
-  function sortTable(field) {
-    const asc = !sortState[field];
-    sortState = {[field]: asc};
-    allFeeds.sort((a, b) => {
-      if (a[field] < b[field]) return asc ? -1 : 1;
-      if (a[field] > b[field]) return asc ? 1 : -1;
-      return 0;
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      fetch('feedstatus.json')
+        .then(resp => {
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          return resp.json();
+        })
+        .then(data => {
+          const tbody = document.querySelector('table tbody');
+          tbody.innerHTML = ''; // leegmaken
+
+          data.forEach((item, idx) => {
+            const tr = document.createElement('tr');
+            if (item.status && item.status.toLowerCase().includes('niet')) {
+              tr.classList.add('niet-werkend');
+            }
+            tr.innerHTML = `
+              <td>${idx + 1}</td>
+              <td><a href="${item.website}" target="_blank" rel="noopener">${item.website}</a></td>
+              <td><a href="${item.feedbron}" target="_blank" rel="noopener">${item.feedbron}</a></td>
+              <td>${item.status}</td>
+              <td>${item.laatst_gecheckt}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+
+          if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5">Geen feedgegevens gevonden.</td></tr>';
+          }
+        })
+        .catch(err => {
+          console.error('Fout bij laden feedstatus:', err);
+          const tbody = document.querySelector('table tbody');
+          tbody.innerHTML = `<tr><td colspan="5">Kon feedstatus niet laden: ${err.message}</td></tr>`;
+        });
     });
-    renderTable(allFeeds);
-  }
-</script>
+  </script>
+</body>
+</html>
