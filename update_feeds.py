@@ -1,39 +1,48 @@
 import os
 import json
 import feedparser
-from datetime import datetime
+from datetime import datetime, timezone
 
+# Map naar je feeds
 FEEDS_DIR = "docs"
-BASE_URL = "https://facilitairinfo.github.io/Newsfeeds"
 
-status_list = []
+def process_feed(file_path):
+    """Parse een feed-bestand en retourneer feed-informatie."""
+    parsed = feedparser.parse(file_path)
 
-for file_name in os.listdir(FEEDS_DIR):
-    if file_name.lower().endswith(".xml"):
-        feed_path = os.path.join(FEEDS_DIR, file_name)
-        feed_url = f"{BASE_URL}/{file_name}"
+    # Zoek de <link> naar de website in de feed
+    website_url = ""
+    if "link" in parsed.feed:
+        website_url = parsed.feed.link
 
-        try:
-            parsed = feedparser.parse(feed_path)
-        except Exception:
-            parsed = None
+    # Feedbestand zelf op GitHub Pages
+    feed_filename = os.path.basename(file_path)
+    feed_url = f"https://facilitairinfo.github.io/Newsfeeds/{feed_filename}"
 
-        if parsed and parsed.feed:
-            website = parsed.feed.get("link", "Onbekend")
-            status = bool(parsed.entries)
-        else:
-            website = "Onbekend"
-            status = False
+    status = bool(parsed.entries)  # True als er items in de feed staan
 
-        status_list.append({
-            "website": website,
-            "feedbron": feed_url,
-            "status": status,
-            "last_checked": datetime.utcnow().strftime("%Y-%m-%d %H:%M")
-        })
+    return {
+        "website": website_url,
+        "feedbron": feed_url,
+        "status": status,
+        "last_checked": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
+    }
 
-# Schrijf feedstatus.json weg
-with open(os.path.join(FEEDS_DIR, "feedstatus.json"), "w", encoding="utf-8") as f:
-    json.dump(status_list, f, ensure_ascii=False, indent=2)
+def main():
+    feeds_status = []
 
-print(f"{len(status_list)} feeds verwerkt en feedstatus.json bijgewerkt.")
+    for filename in os.listdir(FEEDS_DIR):
+        if filename.endswith(".xml"):
+            file_path = os.path.join(FEEDS_DIR, filename)
+            feed_info = process_feed(file_path)
+            feeds_status.append(feed_info)
+
+    # Schrijf feedstatus.json weg
+    output_path = os.path.join(FEEDS_DIR, "feedstatus.json")
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(feeds_status, f, ensure_ascii=False, indent=2)
+
+    print(f"{len(feeds_status)} feeds verwerkt en feedstatus.json bijgewerkt.")
+
+if __name__ == "__main__":
+    main()
