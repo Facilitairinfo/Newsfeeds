@@ -1,42 +1,14 @@
 [
   {
-    "naam": "CFP Nieuws",
-    "status": "ja",
-    "laatst_bijgewerkt": "Tue, 19 Aug 2025 00:00:00 +0200",
-    "aangemaakt_op": "2025-08-23",
-    "laatst_succesvol": "2025-08-23 16:54",
-    "bron": "https://cfp.nl/nieuws-en-cases/"
+    "website": "https://voorbeeld1.nl",
+    "feedbron": "https://facilitairinfo.github.io/voorbeeld1.xml",
+    "status": false,
+    "last_checked": "2025-08-23 17:16"
   },
   {
-    "naam": "Werken voor Nederland – Vacatures (Facilitair/dienstverlening, niveaus HBO/WO)",
-    "status": "nee",
-    "laatst_bijgewerkt": "onbekend",
-    "aangemaakt_op": "2025-08-23",
-    "laatst_succesvol": "nooit",
-    "bron": "https://www.werkenvoornederland.nl/vacatures?type=vacature&vakgebied=CVG.09&werkdenkniveau=CWD.08,CWD.04"
-  },
-  {
-    "naam": "Envalue Inzichten",
-    "status": "ja",
-    "laatst_bijgewerkt": "Thu, 18 Jul 2024 08:52:55 +0000",
-    "aangemaakt_op": "2025-08-23",
-    "laatst_succesvol": "2025-08-23 16:54",
-    "bron": "https://www.envalue.com/nl/inzichten/"
-  },
-  {
-    "naam": "FMHaaglanden Nieuws",
-    "status": "nee",
-    "laatst_bijgewerkt": "onbekend",
-    "aangemaakt_op": "2025-08-23",
-    "laatst_succesvol": "nooit",
-    "bron": "https://www.fmhaaglanden.nl/actueel/nieuws"
-  },
-  {
-    "naam": "FMN Nieuwsoverzicht",
-    "status": "ja",
-    "laatst_bijgewerkt": "onbekend",
-    "aangemaakt_op": "2025-08-23",
-    "laatst_succesvol": "2025-08-23 16:54",
-    "bron": "https://fmn.nl/actueel/nieuws"
+    "website": "https://voorbeeld2.nl",
+    "feedbron": "https://facilitairinfo.github.io/voorbeeld2.xml",
+    "status": false,
+    "last_checked": "2025-08-23 17:16"
   }
 ]
