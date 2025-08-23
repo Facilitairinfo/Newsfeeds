@@ -9,22 +9,21 @@ from datetime import datetime
 import dateparser
 
 # Configuratie
-CFP_URL = "https://cfp.nl/nieuws-en-cases/"
+BASE_URL = "https://cfp.nl"
+START_URL = f"{BASE_URL}/nieuws-en-cases/"
 OUTPUT_FILE = os.path.join("configs", "sites-cfp-nieuws.yml")
 
 def fetch_html(url: str) -> str:
-    """Haalt HTML op van de opgegeven URL."""
     print(f"📡 Ophalen: {url}")
     resp = requests.get(url, timeout=10)
     resp.raise_for_status()
     return resp.text
 
-def parse_articles(html: str) -> list:
-    """Parseert de HTML en geeft een lijst met artikel-data terug."""
+def parse_articles_from_page(html: str) -> list:
+    """Parseert 1 HTML-pagina en geeft lijst met artikel-data."""
     soup = BeautifulSoup(html, "html.parser")
     articles = []
 
-    # Op CFP.nl staan de items in <article> met daarin <h3> en <time>
     for item in soup.select("article"):
         title_tag = item.select_one("h2, h3")
         link_tag = item.find("a", href=True)
@@ -36,9 +35,8 @@ def parse_articles(html: str) -> list:
         title = title_tag.get_text(strip=True)
         link = link_tag["href"]
         if link.startswith("/"):
-            link = "https://cfp.nl" + link
+            link = BASE_URL + link
 
-        # Datum parsing (NL)
         if date_tag and date_tag.get_text(strip=True):
             parsed_date = dateparser.parse(
                 date_tag.get_text(strip=True),
@@ -56,15 +54,34 @@ def parse_articles(html: str) -> list:
             "pubDate": pub_date
         })
 
-    print(f"✅ {len(articles)} artikelen gevonden")
     return articles
 
+def find_next_page(html: str) -> str | None:
+    """Zoekt link naar de volgende pagina, of None."""
+    soup = BeautifulSoup(html, "html.parser")
+    next_link = soup.find("a", attrs={"aria-label": "Volgende"})
+    if next_link and next_link.get("href"):
+        href = next_link["href"]
+        return href if href.startswith("http") else BASE_URL + href
+    return None
+
+def scrape_all_pages(start_url: str) -> list:
+    """Loopt door alle pagina's en verzamelt artikelen."""
+    all_articles = []
+    url = start_url
+    while url:
+        html = fetch_html(url)
+        page_articles = parse_articles_from_page(html)
+        print(f"  ↳ {len(page_articles)} artikelen op deze pagina")
+        all_articles.extend(page_articles)
+        url = find_next_page(html)
+    return all_articles
+
 def save_yaml(articles: list, file_path: str):
-    """Slaat de lijst met artikelen op als YAML."""
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     data = {
         "site_name": "CFP Nieuws & Cases",
-        "site_url": CFP_URL,
+        "site_url": START_URL,
         "items": articles
     }
     with open(file_path, "w", encoding="utf-8") as f:
@@ -72,12 +89,11 @@ def save_yaml(articles: list, file_path: str):
     print(f"💾 YAML opgeslagen: {file_path}")
 
 def scrape_cfp():
-    """Main scraping proces."""
     try:
-        html = fetch_html(CFP_URL)
-        articles = parse_articles(html)
+        articles = scrape_all_pages(START_URL)
         if articles:
             save_yaml(articles, OUTPUT_FILE)
+            print(f"🎉 Totaal {len(articles)} artikelen opgeslagen")
         else:
             print("⚠ Geen artikelen gevonden — YAML niet geüpdatet.")
     except Exception as e:
