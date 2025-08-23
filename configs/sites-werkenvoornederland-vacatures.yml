@@ -10,7 +10,8 @@ site:
       WerkDenkniveau: "CWD.08,CWD.04"
       PageSize: 50
       PageNumber: 1
-      Sortering: "PublicatieDatum_desc"
+      Sortering: "PublicatieDatum_desc"   # nieuwste eerst
+      PublicatieDatumVanaf: "2025-08-01" # optioneel: pas aan voor 'versheid'
   mapping:
     titel: "Titel"
     link: "Url"
