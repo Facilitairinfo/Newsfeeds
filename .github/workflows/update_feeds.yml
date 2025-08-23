@@ -1,0 +1,23 @@
+name: Update feedstatus
+
+on:
+  schedule:
+    - cron: "0 6 * * *"  # elke dag om 06:00 UTC
+  workflow_dispatch: {}   # handmatig starten mogelijk
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - run: pip install feedparser
+      - run: python update_feeds.py
+      - run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add docs/feedstatus.json
+          git commit -m "Auto-update feedstatus"
+          git push
