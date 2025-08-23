@@ -7,10 +7,12 @@ feed:
   link: "https://cfp.nl/nieuws-en-cases/"
   description: "Nieuws en cases van CFP Green Buildings"
   language: "nl"
+
 scraper:
   item_selector: "div.news-overview-item"
   title_selector: "h2 a, h3 a"
-  link_selector: "h2 a, h3 a"
+  link_selector: "h2 a@href, h3 a@href"
   date_selector: ".news-overview-date"
-  description_selector: "p"
+  description_selector: ".news-overview-intro p, p"
+  category_selector: ".news-overview-category"
   date_format: "%d-%m-%Y"
