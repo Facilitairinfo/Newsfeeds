@@ -5,87 +5,88 @@ import requests
 import datetime
 from pathlib import Path
 
-# ===== Instellingen =====
-CONFIGS = [
-    # Voeg hier al je feeds toe
-    ("configs/sites-werkenvoornederland-vacatures.yml",
-     "https://facilitairinfo.github.io/Newsfeeds/sites-werkenvoornederland-vacatures.xml"),
-    # ("configs/andere-feed.yml", "feed-URL"),
-]
-
-TIMEOUT = 8  # seconden
+CONFIG_DIR = Path("configs")
 OUTFILE = Path("feedstatus.json")
+TIMEOUT = 8  # seconden
 
-
-# ===== Functies =====
-def load_config(path):
-    with open(path, "r", encoding="utf-8") as f:
+def load_yaml(path: Path):
+    with path.open("r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
+def guess_feed_url(cfg_path: Path, cfg: dict) -> str:
+    """
+    Probeer feedbron te bepalen:
+      1. Neem 'opties.output' als bestandspad => vorm er een GitHub Pages-URL van
+      2. Of, als het er niet is, neem 'feed.id' of 'feed.link'
+    """
+    site = cfg.get("site", {})
+    opties = site.get("opties", {})
+    feed_section = cfg.get("feed", {})
 
-def check_json_feed(bron):
-    """
-    Voert GET uit naar bron['url'] met eventuele query params.
-    Controleert of response JSON bevat en minimaal 1 item oplevert.
-    """
+    # 1. Uit opties.output (relatief pad naar docs/)
+    output_path = opties.get("output")
+    if output_path:
+        rel = Path(output_path)
+        # aannemend dat alles in GitHub Pages public root staat
+        return f"https://facilitairinfo.github.io/Newsfeeds/{rel.name}"
+
+    # 2. Uit feed.id
+    if isinstance(feed_section, dict):
+        for key in ("id", "link"):
+            if key in feed_section and isinstance(feed_section[key], str):
+                return feed_section[key]
+
+    # fallback: confignaam als hint
+    return f"https://facilitairinfo.github.io/Newsfeeds/{cfg_path.stem}.xml"
+
+def check_json_feed(bron: dict) -> bool:
     try:
         resp = requests.get(bron["url"], params=bron.get("params", {}), timeout=TIMEOUT)
         resp.raise_for_status()
         data = resp.json()
-        # Flexibele check: data kan lijst zijn of dict met items
         items = data if isinstance(data, list) else data.get("Items") or data.get("items") or []
-        ok = isinstance(items, list) and len(items) > 0
-        return ok
+        return isinstance(items, list) and len(items) > 0
     except Exception as e:
-        print(f"[FOUT] JSON-feed {bron['url']}: {e}")
+        print(f"[FOUT] JSON-feed {bron.get('url')}: {e}")
         return False
 
-
-def check_xml_feed(url):
-    """
-    Haalt XML/HTML-feed op en checkt of er minimaal één <item> of <entry> is.
-    """
+def check_xml_feed(url: str) -> bool:
     try:
         resp = requests.get(url, timeout=TIMEOUT)
         resp.raise_for_status()
         txt = resp.text.lower()
-        ok = ("<item" in txt) or ("<entry" in txt)
-        return ok
+        return ("<item" in txt) or ("<entry" in txt)
     except Exception as e:
         print(f"[FOUT] XML/HTML-feed {url}: {e}")
         return False
 
-
-# ===== Hoofdprogramma =====
 def main():
     statuslist = []
     now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
-    for cfg_path, feed_url in CONFIGS:
-        cfg = load_config(cfg_path)
-        siteinfo = cfg.get("site", {})
-        website_title = siteinfo.get("titel") or siteinfo.get("naam") or "Onbekend"
+    for cfg_path in sorted(CONFIG_DIR.glob("*.yml")):
+        cfg = load_yaml(cfg_path)
+        site = cfg.get("site", {})
+        titel = site.get("titel") or site.get("naam") or cfg_path.stem
+        feed_type = site.get("type", "html").lower()
+        feed_url = guess_feed_url(cfg_path, cfg)
 
-        # Bepaal checktype
-        feed_type = siteinfo.get("type", "html").lower()
         if feed_type == "json":
-            ok = check_json_feed(siteinfo.get("bron", {}))
+            ok = check_json_feed(site.get("bron", {}))
         else:
             ok = check_xml_feed(feed_url)
 
         statuslist.append({
-            "website": website_title,
+            "website": titel,
             "feedbron": feed_url,
             "status": ok,
             "last_checked": now_str
         })
 
-    # Schrijf naar bestand
-    with open(OUTFILE, "w", encoding="utf-8") as f:
+    with OUTFILE.open("w", encoding="utf-8") as f:
         json.dump(statuslist, f, ensure_ascii=False, indent=2)
 
-    print(f"[OK] feedstatus.json bijgewerkt met {len(statuslist)} feeds.")
-
+    print(f"[OK] {len(statuslist)} feeds verwerkt → {OUTFILE}")
 
 if __name__ == "__main__":
     main()
