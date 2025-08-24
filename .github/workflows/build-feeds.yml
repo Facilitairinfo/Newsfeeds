@@ -14,10 +14,10 @@ jobs:
         python-version: ["3.10", "3.11", "3.12"]
 
     steps:
-      # 📥 Repo ophalen
+      # 📥 Haal repo binnen
       - uses: actions/checkout@v4
 
-      # 🐍 Python installeren
+      # 🐍 Zet juiste Python‑versie op
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
@@ -32,30 +32,32 @@ jobs:
             ${{ runner.os }}-pip-${{ matrix.python-version }}-
             ${{ runner.os }}-pip-
 
-      # 📥 Dependencies installeren
+      # 📥 Installeer dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 🕷️ Scraper draaien
+      # 🕷️ Run scraper
       - name: Run scraper
         run: python scripts/scrape_all.py
 
-      # 📝 feedstatus.json genereren met retry op 503
+      # 📝 Genereer feedstatus.json met retry + logging bij 503
       - name: Generate feedstatus.json (with retry on 503)
         run: |
           set +e
+          echo "▶ Eerste poging feedstatus genereren..."
           python scripts/gen_feedstatus.py
           EXIT_CODE=$?
           if [ $EXIT_CODE -ne 0 ]; then
-            echo "⚠️ Eerste poging mislukt, wacht 20s en probeer opnieuw..."
+            echo "⚠ Foutcode $EXIT_CODE gedetecteerd. Mogelijk 503‑melding bij bepaalde feed."
+            echo "   Herhalen na 20 seconden..."
             sleep 20
-            python scripts/gen_feedstatus.py || echo "❌ Nog steeds fout, ga verder zonder hard falen."
+            python scripts/gen_feedstatus.py || echo "❌ Tweede poging mislukt, ga verder zonder build te stoppen."
           fi
           set -e
 
-      # 💾 Alleen committen als er wijzigingen zijn
+      # 💾 Commit alleen als er iets veranderd is
       - name: Commit changes if any
         run: |
           git config --global user.name "GitHub Actions"
