@@ -11,11 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]  # Test meerdere Python-versies
+        python-version: ["3.10", "3.11", "3.12"]
 
     steps:
+      # 📥 Repo ophalen
       - uses: actions/checkout@v4
 
+      # 🐍 Python installeren
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
@@ -30,28 +32,38 @@ jobs:
             ${{ runner.os }}-pip-${{ matrix.python-version }}-
             ${{ runner.os }}-pip-
 
-      # 📥 Installeer dependencies
+      # 📥 Dependencies installeren
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 🕷️ Run scraper
+      # 🕷️ Scraper draaien
       - name: Run scraper
         run: python scripts/scrape_all.py
 
-      # 📝 Genereer feedstatus.json
-      - name: Generate feedstatus.json
-        run: python scripts/gen_feedstatus.py
+      # 📝 feedstatus.json genereren met retry op 503
+      - name: Generate feedstatus.json (with retry on 503)
+        run: |
+          set +e
+          python scripts/gen_feedstatus.py
+          EXIT_CODE=$?
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "⚠️ Eerste poging mislukt, wacht 20s en probeer opnieuw..."
+            sleep 20
+            python scripts/gen_feedstatus.py || echo "❌ Nog steeds fout, ga verder zonder hard falen."
+          fi
+          set -e
 
-      # 💾 Commit alleen relevante bestanden
+      # 💾 Alleen committen als er wijzigingen zijn
       - name: Commit changes if any
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          if [[ -n $(git status --porcelain) ]]; then
+          if [[ -n "$(git status --porcelain)" ]]; then
             git add docs/*.xml feedstatus.json
             git commit -m "Update feeds & status [skip ci]"
             git push
           else
             echo "Geen wijzigingen in output, commit wordt overgeslagen."
+          fi
