@@ -3,32 +3,34 @@ name: Build & Scrape Feeds
 on:
   schedule:
     - cron: '0 * * * *'  # ieder uur op het hele uur
-  workflow_dispatch:     # handmatig starten blijft mogelijk
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.x"
+          python-version: "3.11"
 
-      - run: pip install -r requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
 
       - name: Run scraper
-        run: |
-          python scrape.py
-          # Eventuele XML/feeds genereren
+        run: python scripts/scrape_all.py
+
+      - name: Generate feedstatus.json
+        run: python scripts/gen_feedstatus.py
 
       - name: Commit changes if any
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           if [[ -n $(git status --porcelain) ]]; then
-            git add .
-            git commit -m "Update feeds [skip ci]"
+            git add docs/*.xml feedstatus.json
+            git commit -m "Update feeds & status [skip ci]"
             git push
           else
             echo "Geen wijzigingen in output, commit wordt overgeslagen."
-          fi
