@@ -3,48 +3,63 @@ name: Update feeds & status
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 */6 * * *" # elke 6 uur draaien (pas aan naar wens)
+    # Draait om 04:00, 10:00, 16:00 en 19:00 NL tijd
+    - cron: "0 2,8,14,17 * * *"   # UTC tijden, want GitHub Actions draait op UTC
+                                  # 02:00 UTC = 04:00 CEST
+                                  # 08:00 UTC = 10:00 CEST
+                                  # 14:00 UTC = 16:00 CEST
+                                  # 17:00 UTC = 19:00 CEST
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Haal de repo op
+      # 1. Repo ophalen met volledige historie (nodig voor rebase)
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Belangrijk voor pull/rebase
+          fetch-depth: 0
 
-      # 2. Zet Python op
+      # 2. Python installeren
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
-      # 3. Installeer dependencies
+      # 3. Dependencies installeren
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 4. Run scraper
-      - name: Run scraper
-        run: python scripts/scrape_all.py
+      # 4. Scraper draaien met retry bij 503
+      - name: Run scraper with retry on 503
+        run: |
+          run_scraper() {
+            python scripts/scrape_all.py || return 1
+          }
+          ATTEMPTS=0
+          MAX_ATTEMPTS=3
+          until run_scraper; do
+            ATTEMPTS=$((ATTEMPTS+1))
+            if [ "$ATTEMPTS" -ge "$MAX_ATTEMPTS" ]; then
+              echo "❌ Scraper mislukt na $ATTEMPTS pogingen."
+              exit 1
+            fi
+            echo "⚠️ 503 of andere fout, poging $ATTEMPTS/$MAX_ATTEMPTS — wacht 10s..."
+            sleep 10
+          done
 
-      # 5. Commit & push alleen bij wijzigingen
+      # 5. Commit en push alleen bij wijzigingen, mét fetch + rebase
       - name: Commit and push changes
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
 
-          # Haal laatste remote main binnen
           git fetch origin main
-
-          # Rebase bovenop de nieuwste main
           git rebase origin/main
 
-          # Check of er wijzigingen zijn
           if [[ -n "$(git status --porcelain docs/*.xml feedstatus.json 2>/dev/null)" ]]; then
               git add docs/*.xml feedstatus.json
               git commit -m "Update feeds & status [skip ci]"
