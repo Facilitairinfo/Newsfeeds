@@ -11,19 +11,31 @@ Deze repository bevat de scraping‑scripts en workflow‑automatisering om feed
 ## 📋 Over dit project
 Dit project:
 - Scraped nieuws- of contentfeeds op basis van YAML‑configuraties in de `configs/` map
-- Genereert XML‑bestanden in `docs/` die direct kunnen worden gepubliceerd via GitHub Pages
+- Genereert XML‑bestanden in `docs/` die direct gepubliceerd kunnen worden via GitHub Pages
 - Maakt een `feedstatus.json` om de beschikbaarheid van feeds te monitoren
 - Draait volledig automatisch via GitHub Actions, twee keer per uur (om :15 en :45)
 
 ---
 
+## 📡 Live feeds
+Klik op een feednaam om het actuele XML‑bestand te bekijken:
+
+- [Voorbeeldfeed 1](https://facilitairinfo.github.io/Newsfeeds/example1.xml)
+- [Voorbeeldfeed 2](https://facilitairinfo.github.io/Newsfeeds/example2.xml)
+- [Feedstatus JSON](https://facilitairinfo.github.io/Newsfeeds/feedstatus.json)
+
+> 🔹 Vervang de feedlinks hierboven door de daadwerkelijke `.xml`‑bestanden uit je `docs/` map.  
+> GitHub Pages publiceert die automatisch op `https://facilitairinfo.github.io/Newsfeeds/<bestandsnaam>.xml`.
+
+---
+
 ## ⚙️ Hoe het werkt
 1. **Scraper** (`scripts/scrape_all.py`):
-   - Zoekt alle `.yml`-configbestanden in `configs/`
+   - Zoekt alle `.yml`‑configbestanden in `configs/`
    - Roept per config het juiste scraping‑script aan
 2. **Feedstatus** (`scripts/gen_feedstatus.py`):
-   - Controleert of de feeds nog geldig en bereikbaar zijn
-   - Schrijft de resultaten weg naar `feedstatus.json`
+   - Controleert of de feeds geldig en bereikbaar zijn
+   - Schrijft de resultaten naar `feedstatus.json`
 3. **Workflow** (`.github/workflows/build-feeds.yml`):
    - Installeert dependencies uit `requirements.txt`
    - Voert de scraper en feedstatus‑generator uit
