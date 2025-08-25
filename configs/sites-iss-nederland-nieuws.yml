@@ -1,0 +1,25 @@
+site:
+  naam: iss-nederland-nieuws
+  titel: ISS Nederland – Nieuws en pers
+  type: html
+  bron:
+    url: "https://www.issworld.com/nl-nl/insights/insights/nl/nieuws-en-pers"
+    selectors:
+      items: "ul.newsList_list__h45E5 > li"
+      titel: ".NewsItem_heading__O_Q6b"
+      link: ".NewsItem_link__orVEi a::attr(href)"
+      teaser: ".NewsItem_teaser__EuQDB, .NewsItem_teaser__EuQDB p"
+      publicatie_datum: "time::attr(datetime)"
+      afbeelding: ".NewsItem_image__oXWI1 img::attr(src)"
+  mapping:
+    titel: "titel"
+    link: "link"
+    beschrijving: "teaser"
+    publicatie_datum: "publicatie_datum"
+    afbeelding: "afbeelding"
+  opties:
+    output: "docs/sites-iss-nederland-nieuws.xml"
+    feed_id: "https://facilitairinfo.github.io/Newsfeeds/sites-iss-nederland-nieuws.xml"
+    datumformaat: "yyyy-MM-dd"
+    encoding: "UTF-8"
+    absolute_links: true
