@@ -4,13 +4,13 @@ site:
   type: html
   bron:
     url: "https://www.issworld.com/nl-nl/insights/insights/nl/nieuws-en-pers"
-    selectors:
-      items: "ul.newsList_list__h45E5 > li"
-      titel: ".NewsItem_heading__O_Q6b"
-      link: ".NewsItem_link__orVEi a::attr(href)"
-      teaser: ".NewsItem_teaser__EuQDB, .NewsItem_teaser__EuQDB p"
-      publicatie_datum: "time::attr(datetime)"
-      afbeelding: ".NewsItem_image__oXWI1 img::attr(src)"
+  selectors:
+    items: "ul.newsList_list__h45E5 > li"
+    titel: ".NewsItem_heading__O_Q6b"
+    link: ".NewsItem_link__orVEi a::attr(href)"
+    teaser: ".NewsItem_teaser__EuQDB, .NewsItem_teaser__EuQDB p"
+    publicatie_datum: "time::attr(datetime)"
+    afbeelding: ".NewsItem_image__oXWI1 img::attr(src)"
   mapping:
     titel: "titel"
     link: "link"
