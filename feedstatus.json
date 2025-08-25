@@ -3,30 +3,30 @@
     "website": "sites-Envalue-nieuws",
     "feedbron": "https://facilitairinfo.github.io/Newsfeeds/sites-Envalue-nieuws.xml",
     "status": true,
-    "last_checked": "2025-08-25 17:59"
+    "last_checked": "2025-08-25 18:46"
   },
   {
     "website": "sites-cfp-nieuws",
     "feedbron": "https://facilitairinfo.github.io/Newsfeeds/sites-cfp-nieuws.xml",
     "status": true,
-    "last_checked": "2025-08-25 17:59"
+    "last_checked": "2025-08-25 18:46"
   },
   {
     "website": "sites-fmn-nieuws",
     "feedbron": "https://facilitairinfo.github.io/Newsfeeds/sites-fmn-nieuws.xml",
     "status": true,
-    "last_checked": "2025-08-25 17:59"
+    "last_checked": "2025-08-25 18:46"
   },
   {
     "website": "ISS Nederland – Nieuws en pers",
     "feedbron": "https://facilitairinfo.github.io/Newsfeeds/sites-iss-nederland-nieuws.xml",
     "status": true,
-    "last_checked": "2025-08-25 17:59"
+    "last_checked": "2025-08-25 18:46"
   },
   {
     "website": "Werken voor Nederland – Vacatures",
     "feedbron": "https://facilitairinfo.github.io/Newsfeeds/sites-werkenvoornederland-vacatures.xml",
     "status": false,
-    "last_checked": "2025-08-25 17:59"
+    "last_checked": "2025-08-25 18:46"
   }
 ]
