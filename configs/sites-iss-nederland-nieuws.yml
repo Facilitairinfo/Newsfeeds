@@ -4,6 +4,7 @@ site:
   type: html
   bron:
     url: "https://www.issworld.com/nl-nl/insights/insights/nl/nieuws-en-pers"
+
   selectors:
     items: "ul.newsList_list__h45E5 > li"
     titel: ".NewsItem_heading__O_Q6b"
@@ -11,15 +12,24 @@ site:
     teaser: ".NewsItem_teaser__EuQDB, .NewsItem_teaser__EuQDB p"
     publicatie_datum: "time::attr(datetime)"
     afbeelding: ".NewsItem_image__oXWI1 img::attr(src)"
+
   mapping:
     titel: "titel"
     link: "link"
     beschrijving: "teaser"
     publicatie_datum: "publicatie_datum"
     afbeelding: "afbeelding"
+
+  # Nieuw toegevoegd: datumconverter
+  transformaties:
+    publicatie_datum:
+      - type: date_format
+        van: "yyyy-MM-dd"
+        naar: "EEE, dd MMM yyyy 00:00:00 Z"
+
   opties:
     output: "docs/sites-iss-nederland-nieuws.xml"
     feed_id: "https://facilitairinfo.github.io/Newsfeeds/sites-iss-nederland-nieuws.xml"
-    datumformaat: "yyyy-MM-dd"
+    datumformaat: "EEE, dd MMM yyyy HH:mm:ss Z"
     encoding: "UTF-8"
     absolute_links: true
