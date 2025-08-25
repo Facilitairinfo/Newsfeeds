@@ -38,7 +38,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 🕷️ Run scraper
+      # 🕷️ Run scraper (incl. ISS + WVN)
       - name: Run scraper
         run: python scripts/scrape_all.py
 
