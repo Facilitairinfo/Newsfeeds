@@ -14,15 +14,15 @@ jobs:
         python-version: ["3.10", "3.11", "3.12"]
 
     steps:
-      # 📥 Haal repo binnen
+      # 📥 Repo ophalen
       - uses: actions/checkout@v4
 
-      # 🐍 Zet juiste Python‑versie op
+      # 🐍 Python instellen
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
-      # 📦 Cache pip packages
+      # 📦 Pip cache
       - name: Cache pip packages
         uses: actions/cache@v4
         with:
@@ -32,17 +32,17 @@ jobs:
             ${{ runner.os }}-pip-${{ matrix.python-version }}-
             ${{ runner.os }}-pip-
 
-      # 📥 Installeer dependencies
+      # 📥 Dependencies installeren
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 🕷️ Run scraper (incl. ISS + WVN)
-      - name: Run scraper
+      # 🕷️ Alles scrapen (configs + WVN + ISS)
+      - name: Run all scrapers
         run: python scripts/scrape_all.py
 
-      # 📝 Genereer feedstatus.json met retry + logging bij 503
+      # 📝 feedstatus.json maken met retry
       - name: Generate feedstatus.json (with retry on 503)
         run: |
           set +e
@@ -50,14 +50,14 @@ jobs:
           python scripts/gen_feedstatus.py
           EXIT_CODE=$?
           if [ $EXIT_CODE -ne 0 ]; then
-            echo "⚠ Foutcode $EXIT_CODE gedetecteerd. Mogelijk 503‑melding bij bepaalde feed."
+            echo "⚠ Foutcode $EXIT_CODE gedetecteerd. Mogelijk 503‑melding."
             echo "   Herhalen na 20 seconden..."
             sleep 20
             python scripts/gen_feedstatus.py || echo "❌ Tweede poging mislukt, ga verder zonder build te stoppen."
           fi
           set -e
 
-      # 💾 Commit alleen als er iets veranderd is
+      # 💾 Commit alleen bij wijzigingen
       - name: Commit changes if any
         run: |
           git config --global user.name "GitHub Actions"
@@ -67,5 +67,5 @@ jobs:
             git commit -m "Update feeds & status [skip ci]"
             git push
           else
-            echo "Geen wijzigingen in output, commit wordt overgeslagen."
+            echo "Geen wijzigingen, commit overgeslagen."
           fi
