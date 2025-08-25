@@ -59,7 +59,7 @@ jobs:
           fi
           set -e
 
-      # 💾 Commit + push met rebase om conflicts te voorkomen
+      # 💾 Commit + push met pull --rebase om conflicts te voorkomen
       - name: Commit & push changes if any
         run: |
           git config --global user.name "GitHub Actions"
