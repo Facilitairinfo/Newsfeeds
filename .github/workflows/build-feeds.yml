@@ -44,20 +44,9 @@ jobs:
       - name: Run all scrapers
         run: python scripts/scrape_all.py
 
-      # 📝 feedstatus.json maken met retry
-      - name: Generate feedstatus.json (with retry on 503)
-        run: |
-          set +e
-          echo "▶ Eerste poging feedstatus genereren..."
-          python scripts/gen_feedstatus.py
-          EXIT_CODE=$?
-          if [ $EXIT_CODE -ne 0 ]; then
-            echo "⚠ Foutcode $EXIT_CODE gedetecteerd. Mogelijk 503‑melding."
-            echo "   Herhalen na 20 seconden..."
-            sleep 20
-            python scripts/gen_feedstatus.py || echo "❌ Tweede poging mislukt, ga verder zonder build te stoppen."
-          fi
-          set -e
+      # 📝 feedstatus.json automatisch genereren door docs/ te scannen
+      - name: Generate feedstatus.json (auto scan docs/)
+        run: python scripts/gen_feedstatus_auto.py
 
       # 💾 Commit + push alleen bij Python 3.12 job
       - name: Commit & push changes if any
@@ -65,8 +54,13 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
+
+          # Wijzigingen toevoegen (XML + feedstatus + eventuele HTML-overzichten)
+          git add docs/*.xml || true
+          git add docs/feedstatus.json || true
+          git add docs/*.html || true
+
           if [[ -n "$(git status --porcelain)" ]]; then
-            git add docs/*.xml feedstatus.json
             git commit -m "Update feeds & status [skip ci]"
             git pull --rebase origin main
             git push origin main
