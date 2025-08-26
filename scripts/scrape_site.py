@@ -23,7 +23,9 @@ def run(config_path: pathlib.Path):
 
     site_cfg = cfg.get("site", {})
     base_url = site_cfg.get("bron", {}).get("url", "").strip()
-    selectors = site_cfg.get("bron", {}).get("selectors", {})
+
+    # ✅ FIX: selectors direct onder site_cfg
+    selectors = site_cfg.get("selectors", {})
     mapping = site_cfg.get("mapping", {})
     opties = site_cfg.get("opties", {})
 
