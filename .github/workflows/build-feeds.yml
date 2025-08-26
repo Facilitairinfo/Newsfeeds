@@ -39,10 +39,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          python -m playwright install
 
       # 🕷️ Alles scrapen (configs + WVN + ISS)
       - name: Run all scrapers
-        run: python scripts/scrape_all.py
+        run: |
+          python scripts/scrape_all.py
+          python scripts/scrape_nen_playwright.py
 
       # 📝 feedstatus.json automatisch genereren door docs/ te scannen
       - name: Generate feedstatus.json (auto scan docs/)
@@ -67,4 +70,3 @@ jobs:
           else
             echo "Geen wijzigingen, commit overgeslagen."
           fi
-
