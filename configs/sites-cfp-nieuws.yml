@@ -1,12 +1,10 @@
-title: "CFP Nieuws"
-link: "https://cfp.nl/nieuws-en-cases/"
-description: "Laatste nieuws en cases van CFP Green Buildings"
-items:
-  - title: "CFP hernieuwt beveiligingscertificaat FSQS-NL voor 2025"
-    link: "https://cfp.nl/nieuws-en-cases/cfp-ontvangt-beveiligingscertificaat-fsqs/"
-    description: "CFP Green Buildings is FSQS geregistreerd en heeft hiervoor een certificaat ontvangen."
-    pubDate: "21-08-2025"
-  - title: "CFP lanceert energiebesparingstool voor woningen in Polen in samenwerking met ING Bank Śląski"
-    link: "https://cfp.nl/nieuws-en-cases/cfp-lanceert-energiebesparingscalculator-voor-woningen-in-polen-in-samenwerking-met-ing-bank-slaski/"
-    description: "Nieuwe calculator helpt huiseigenaren in Polen met verduurzamen, in samenwerking met ING Bank Śląski."
-    pubDate: "19-08-2025"
+name: CFP
+url: https://cfp.nl/nieuws-en-cases/
+selectors:
+  item: "div.article-card"
+  title: "h3"
+  link: "a"
+  date: "span.date"
+date_format: "%d %B %Y"
+use_playwright: true
+output: docs/sites-cfp-nieuws.xml
