@@ -1,51 +1,65 @@
-# Newsfeeds
+# 📰 Newsfeeds
 
-[![Build & Scrape Feeds](https://github.com/facilitairinfo/Newsfeeds/actions/workflows/build-feeds.yml/badge.svg)](https://github.com/facilitairinfo/Newsfeeds/actions/workflows/build-feeds.yml)
-![Last updated](https://img.shields.io/endpoint?url=https%3A%2F%2Fshields-io-visitor-counter.vercel.app%2Fapi%2Fgithub_last_commit_time%3Fuser%3Dfacilitairinfo%26repo%3DNewsfeeds&label=Updated)
-
-Automatisch genereren en bijhouden van XML‑feeds en feedstatus voor diverse bronnen.  
-Deze repository bevat de scraping‑scripts en workflow‑automatisering om feeds up‑to‑date te houden.
-
----
+Automatisch genereren en bijhouden van XML‑feeds, statusoverzichten en onderhoudspagina’s voor diverse nieuwsbronnen.
 
 ## 📋 Over dit project
 Dit project:
-- Scraped nieuws- of contentfeeds op basis van YAML‑configuraties in de `configs/` map
-- Genereert XML‑bestanden in `docs/` die direct gepubliceerd kunnen worden via GitHub Pages
-- Maakt een `feedstatus.json` om de beschikbaarheid van feeds te monitoren
-- Draait volledig automatisch via GitHub Actions, twee keer per uur (om :15 en :45)
-
----
+- Scrapet nieuws- of contentfeeds op basis van `.yml`‑configuraties in de map [`configs/`](configs/)
+- Genereert `.xml`‑bestanden in [`docs/`](docs/) die direct via **GitHub Pages** gepubliceerd worden
+- Maakt een `feedstatus.json` en `feedonderhoud.html` om beschikbaarheid en onderhoud bij te houden
+- Draait **volledig automatisch** via GitHub Actions op vaste tijden (zie schema hieronder)
 
 ## 📡 Live feeds
 Klik op een feednaam om het actuele XML‑bestand te bekijken:
 
-- [Voorbeeldfeed 1](https://facilitairinfo.github.io/Newsfeeds/example1.xml)
-- [Voorbeeldfeed 2](https://facilitairinfo.github.io/Newsfeeds/example2.xml)
-- [Feedstatus JSON](https://facilitairinfo.github.io/Newsfeeds/feedstatus.json)
+- *[Voorbeeldfeed 1](docs/voorbeeldfeed1.xml)*
+- *[Voorbeeldfeed 2](docs/voorbeeldfeed2.xml)*
 
-> 🔹 Vervang de feedlinks hierboven door de daadwerkelijke `.xml`‑bestanden uit je `docs/` map.  
-> GitHub Pages publiceert die automatisch op `https://facilitairinfo.github.io/Newsfeeds/<bestandsnaam>.xml`.
+📂 [Feedstatus (JSON)](docs/feedstatus.json)  
+📄 [Feedonderhoud](docs/feedonderhoud.html)
 
----
+> 🔹 **Tip:** vervang de voorbeeldlinks hierboven door de daadwerkelijke bestandsnamen uit je `docs/`‑map.  
+> GitHub Pages publiceert die automatisch op:  
+> `https://facilitairinfo.github.io/Newsfeeds/<bestandsnaam>.xml`
 
 ## ⚙️ Hoe het werkt
-1. **Scraper** (`scripts/scrape_all.py`):
-   - Zoekt alle `.yml`‑configbestanden in `configs/`
-   - Roept per config het juiste scraping‑script aan
-2. **Feedstatus** (`scripts/gen_feedstatus.py`):
-   - Controleert of de feeds geldig en bereikbaar zijn
-   - Schrijft de resultaten naar `feedstatus.json`
-3. **Workflow** (`.github/workflows/build-feeds.yml`):
-   - Installeert dependencies uit `requirements.txt`
-   - Voert de scraper en feedstatus‑generator uit
-   - Commit automatisch gewijzigde bestanden
 
----
+### 1️⃣ Scraper
+`scripts/scrape_all.py`:
+- Zoekt alle `.yml`‑configbestanden in `configs/`
+- Roept per config het juiste scraping‑script aan
+- Schrijft de `.xml`‑feeds naar `docs/`
 
-## 🚀 Zelf draaien
-Wil je lokaal testen?
+### 2️⃣ Feedstatus
+`scripts/gen_feedstatus.py`:
+- Controleert of de feeds geldig en bereikbaar zijn
+- Schrijft resultaten naar `feedstatus.json`
+- Past ook `feedonderhoud.html` aan
 
+### 3️⃣ Workflows
+- **`update_feeds.yml`** – draait 8× per dag op vaste tijden  
+- **`build-feeds.yml`** – zelfde logica en tijden, plus handmatige optie  
+Beide workflows:
+- Installeren dependencies
+- Draaien de scraper met retry‑logica
+- Committen alleen als er wijzigingen zijn
+
+## 🕒 Draaischema (NL‑tijd)
+
+| Tijd  | Omschrijving                            |
+|-------|-----------------------------------------|
+| 04:00 | Vroege ochtendscan                      |
+| 07:00 | Ochtendnieuws                           |
+| 08:00 | Persberichten / updates                 |
+| 09:00 | Laatste ochtendgolf                     |
+| 10:00 | Late ochtendcontent                     |
+| 13:00 | Lunchupdate                             |
+| 16:00 | Middagronde                             |
+| 19:00 | Avondcheck                              |
+
+*(Draaitijden komen overeen voor beide workflows.)*
+
+## 🚀 Zelf draaien (lokaal testen)
 ```bash
 # 1. Clone de repository
 git clone https://github.com/facilitairinfo/Newsfeeds.git
@@ -57,5 +71,5 @@ pip install -r requirements.txt
 # 3. Scrape feeds
 python scripts/scrape_all.py
 
-# 4. Genereer feedstatus.json
+# 4. Genereer feedstatus
 python scripts/gen_feedstatus.py
