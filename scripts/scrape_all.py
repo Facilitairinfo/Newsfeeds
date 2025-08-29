@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os
 import glob
 import datetime
@@ -7,9 +8,9 @@ import xml.etree.ElementTree as ET
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import scrape_site
-import pathlib   # ✅ Toegevoegd om NameError op te lossen
+import pathlib
+from feedstatus import update_status  # ✅ stap 3 toegevoegd
 
-# nieuwe versie met run()
 CONFIG_DIR = "configs"
 OUTPUT_DIR = "docs"
 
@@ -82,9 +83,16 @@ def scrape_wvn_vacatures():
     if not jobs:
         print("❌ Geen vacatures gevonden voor WVN")
         return
-
-    rss_xml = jobs_to_rss(sort_and_limit(jobs))
+    sorted_jobs = sort_and_limit(jobs)
+    rss_xml = jobs_to_rss(sorted_jobs)
     save_xml(rss_xml, os.path.join(OUTPUT_DIR, "sites-werkenvoornederland-vacatures.xml"))
+
+    # ✅ stap 4: feedstatus bijwerken
+    config = {
+        "website": "Werken voor Nederland",
+        "feedbron": "sites-werkenvoornederland-vacatures.xml"
+    }
+    update_status(config, sorted_jobs)
 
 # -------------------------------
 # ISS Nederland – Nieuws
@@ -109,13 +117,11 @@ def scrape_iss_nieuws():
             teaser_el = li.select_one(".NewsItem_teaser__EuQDB")
             date_el = li.select_one("time")
             img_el = li.select_one(".NewsItem_image__oXWI1 img")
-
             title = title_el.get_text(strip=True) if title_el else None
             link = urljoin(BASE_URL, link_el["href"]) if link_el and link_el.has_attr("href") else None
             teaser = teaser_el.get_text(strip=True) if teaser_el else ""
             pub_date = date_el["datetime"] if date_el and date_el.has_attr("datetime") else None
             img_url = urljoin(BASE_URL, img_el["src"]) if img_el and img_el.has_attr("src") else None
-
             if title and link:
                 arts.append({
                     "title": title,
@@ -154,9 +160,15 @@ def scrape_iss_nieuws():
     if not arts:
         print("❌ Geen nieuwsartikelen gevonden voor ISS")
         return
-
     rss_xml = build_rss(arts[:MAX_ITEMS])
     save_xml(rss_xml, os.path.join(OUTPUT_DIR, "sites-iss-nederland-nieuws.xml"))
+
+    # ✅ stap 4: feedstatus bijwerken
+    config = {
+        "website": "ISS Nederland – Nieuws",
+        "feedbron": "sites-iss-nederland-nieuws.xml"
+    }
+    update_status(config, arts[:MAX_ITEMS])
 
 # -------------------------------
 # Generieke configs
@@ -168,7 +180,11 @@ def scrape_from_configs():
             continue
         if "sites-iss-nederland-nieuws" in config_file:
             continue
-        scrape_site.run(pathlib.Path(config_file))
+        try:
+            config, items = scrape_site.run(pathlib.Path(config_file))
+            update_status(config, items)  # ✅ stap 4
+        except Exception as e:
+            print(f"⚠ Fout bij verwerken {config_file}: {e}")
 
 # -------------------------------
 # Main
