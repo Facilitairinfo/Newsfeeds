@@ -1,7 +1,10 @@
-title: "Envalue Inzichten"
-url: "https://www.envalue.com/nl/inzichten/feed/"
-link: "https://www.envalue.com/nl/inzichten/"
-language: "nl"
-description: "Laatste inzichten en nieuws van Envalue"
-max_items: 12
-feed_type: "rss"
+name: Envalue
+url: https://www.envalue.com/nl/inzichten/
+selectors:
+  item: "div.blog-card"
+  title: "h3"
+  link: "a"
+  date: "span.date"
+date_format: "%d %B %Y"
+use_playwright: true
+output: docs/sites-Envalue-nieuws.xml
