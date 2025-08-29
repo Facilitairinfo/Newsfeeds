@@ -3,15 +3,12 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 from urllib.parse import urljoin
+from feedstatus import update_status  # ✅ Stap 3 toegevoegd
 
 def scrape_site(url, scraper_cfg):
-    """
-    Haalt de HTML op van `url`, selecteert de items met `item_selector`
-    en geeft een lijst dicts terug met title, link, description, pubDate, category.
-    """
+    """Haalt de HTML op van `url`, selecteert de items met `item_selector` en geeft een lijst dicts terug met title, link, description, pubDate, category."""
     resp = requests.get(url, timeout=20)
     resp.raise_for_status()
-
     soup = BeautifulSoup(resp.text, "html.parser")
     items_data = []
 
