@@ -2,36 +2,59 @@ name: Build & Scrape Feeds
 
 on:
   schedule:
-    - cron: '0 6 * * *'  # Dagelijks om 06:00 UTC (08:00 NL tijd)
-  workflow_dispatch:     # Handmatig starten
+    - cron: '0 6 * * *'   # Dagelijks om 06:00 UTC (08:00 NL tijd)
+  workflow_dispatch:
 
 jobs:
-  scrape:
+  build:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Repo ophalen met volledige historie (voor rebase)
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Set up Python
+      # 2. Python installeren
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.10"
 
+      # 3. Dependencies installeren
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          playwright install
 
-      - name: Run scraper
+      # 4. Scraper draaien met retry bij 503
+      - name: Run scraper with retry on 503
         run: |
-          python scripts/scrape_all.py   # ✅ aangepast
+          run_scraper() { python scripts/scrape_all.py || return 1; }
+          ATTEMPTS=0
+          MAX_ATTEMPTS=3
+          until run_scraper; do
+            ATTEMPTS=$((ATTEMPTS+1))
+            if [ "$ATTEMPTS" -ge "$MAX_ATTEMPTS" ]; then
+              echo "❌ Scraper mislukt na $ATTEMPTS pogingen."
+              exit 1
+            fi
+            echo "⚠️ 503 of andere fout, poging $ATTEMPTS/$MAX_ATTEMPTS — wacht 10s..."
+            sleep 10
+          done
 
-      - name: Commit updated feeds
+      # 5. Commit en push alleen bij wijzigingen, mét fetch + rebase
+      - name: Commit and push changes
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git add docs/*.xml docs/feedstatus.json docs/feedonderhoud.html
-          git commit -m "Update feeds & status [skip ci]" || echo "No changes to commit"
-          git push
+          git fetch origin main
+          git rebase origin/main
+          if [[ -n "$(git status --porcelain docs/*.xml docs/feedstatus.json docs/feedonderhoud.html 2>/dev/null)" ]]; then
+            git add docs/*.xml docs/feedstatus.json docs/feedonderhoud.html
+            git commit -m "Update feeds & status [skip ci]"
+            git push origin main
+          else
+            echo "Geen wijzigingen in output, commit wordt overgeslagen."
+          fi
