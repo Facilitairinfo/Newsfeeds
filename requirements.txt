@@ -1,7 +1,8 @@
-beautifulsoup4   # HTML scraping
-dateparser       # Flexibele datumextractie
-feedgen          # RSS-feed generatie
-lxml             # Parser voor BeautifulSoup
-PyYAML           # YAML-bestanden verwerken
-requests         # HTTP-verzoeken
-feedparser       # RSS/Atom feeds parsen
+beautifulsoup4          # HTML scraping
+dateparser              # Flexibele datumextractie
+feedgen                 # RSS-feed generatie
+lxml                    # Parser voor BeautifulSoup
+PyYAML                  # YAML-bestanden verwerken
+requests                # HTTP-verzoeken
+feedparser              # RSS/Atom feeds parsen
+playwright              # Headless browser scraping
