@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import scrape_site
 import pathlib
-from feedstatus import update_status  # ✅ stap 3 toegevoegd
+from feedstatus import update_status
 
 CONFIG_DIR = "configs"
 OUTPUT_DIR = "docs"
@@ -25,7 +25,9 @@ def scrape_wvn_vacatures():
         "WerkDenkniveau": "CWD.08,CWD.04",
         "PageSize": 20,
         "Sortering": "PublicatieDatum_desc",
-        "PublicatieDatumVanaf": (datetime.datetime.now() - datetime.timedelta(days=30)).strftime("%Y-%m-%d")
+        "PublicatieDatumVanaf": (
+            datetime.datetime.now() - datetime.timedelta(days=30)
+        ).strftime("%Y-%m-%d"),
     }
     MAX_ITEMS = 6
     MAX_PAGES = 3
@@ -83,16 +85,19 @@ def scrape_wvn_vacatures():
     if not jobs:
         print("❌ Geen vacatures gevonden voor WVN")
         return
+
     sorted_jobs = sort_and_limit(jobs)
     rss_xml = jobs_to_rss(sorted_jobs)
     save_xml(rss_xml, os.path.join(OUTPUT_DIR, "sites-werkenvoornederland-vacatures.xml"))
 
-    # ✅ stap 4: feedstatus bijwerken
+    # ✅ output toegevoegd
     config = {
         "website": "Werken voor Nederland",
-        "feedbron": "sites-werkenvoornederland-vacatures.xml"
+        "feedbron": "sites-werkenvoornederland-vacatures.xml",
+        "output": "docs/sites-werkenvoornederland-vacatures.xml"
     }
     update_status(config, sorted_jobs)
+
 
 # -------------------------------
 # ISS Nederland – Nieuws
@@ -117,11 +122,13 @@ def scrape_iss_nieuws():
             teaser_el = li.select_one(".NewsItem_teaser__EuQDB")
             date_el = li.select_one("time")
             img_el = li.select_one(".NewsItem_image__oXWI1 img")
+
             title = title_el.get_text(strip=True) if title_el else None
             link = urljoin(BASE_URL, link_el["href"]) if link_el and link_el.has_attr("href") else None
             teaser = teaser_el.get_text(strip=True) if teaser_el else ""
             pub_date = date_el["datetime"] if date_el and date_el.has_attr("datetime") else None
             img_url = urljoin(BASE_URL, img_el["src"]) if img_el and img_el.has_attr("src") else None
+
             if title and link:
                 arts.append({
                     "title": title,
@@ -160,15 +167,18 @@ def scrape_iss_nieuws():
     if not arts:
         print("❌ Geen nieuwsartikelen gevonden voor ISS")
         return
+
     rss_xml = build_rss(arts[:MAX_ITEMS])
     save_xml(rss_xml, os.path.join(OUTPUT_DIR, "sites-iss-nederland-nieuws.xml"))
 
-    # ✅ stap 4: feedstatus bijwerken
+    # ✅ output toegevoegd
     config = {
         "website": "ISS Nederland – Nieuws",
-        "feedbron": "sites-iss-nederland-nieuws.xml"
+        "feedbron": "sites-iss-nederland-nieuws.xml",
+        "output": "docs/sites-iss-nederland-nieuws.xml"
     }
     update_status(config, arts[:MAX_ITEMS])
+
 
 # -------------------------------
 # Generieke configs
@@ -182,9 +192,10 @@ def scrape_from_configs():
             continue
         try:
             config, items = scrape_site.run(pathlib.Path(config_file))
-            update_status(config, items)  # ✅ stap 4
+            update_status(config, items)
         except Exception as e:
             print(f"⚠ Fout bij verwerken {config_file}: {e}")
+
 
 # -------------------------------
 # Main
