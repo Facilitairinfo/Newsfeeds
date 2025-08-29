@@ -3,10 +3,14 @@ name: Update feeds & status
 on:
   workflow_dispatch:
   schedule:
-    # Draait om 04:00, 10:00, 16:00 en 19:00 NL tijd
-    - cron: "0 2,8,14,17 * * *"  # UTC tijden, GitHub Actions draait op UTC
+    # Draait nu om 04:00, 07:00, 08:00, 09:00, 10:00, 13:00, 16:00 en 19:00 NL tijd
+    - cron: "0 2,5,6,7,8,11,14,17 * * *"  # UTC tijden
     # 02:00 UTC = 04:00 CEST
+    # 05:00 UTC = 07:00 CEST
+    # 06:00 UTC = 08:00 CEST
+    # 07:00 UTC = 09:00 CEST
     # 08:00 UTC = 10:00 CEST
+    # 11:00 UTC = 13:00 CEST
     # 14:00 UTC = 16:00 CEST
     # 17:00 UTC = 19:00 CEST
 
