@@ -74,7 +74,8 @@ def scrape_wvn_vacatures():
         def save_xml(element, filename):
             tree = ET.ElementTree(element)
             ET.indent(tree, space=" ", level=0)
-            os.makedirs(os.path.dirname(filename), exist_ok=True)
+            os.makedirs(os.path.dirname(filename), exist_ok=True
+            )
             tree.write(filename, encoding="UTF-8", xml_declaration=True)
             print(f"✅ WVN-feed opgeslagen in {filename}")
 
@@ -189,11 +190,36 @@ def scrape_iss_nieuws():
 def scrape_from_configs():
     configs = glob.glob(os.path.join(CONFIG_DIR, "*.yml"))
     for config_file in configs:
+        # skip de twee maatwerk-scrapers als er .yml varianten bestaan
         if "werkenvoornederland" in config_file or "iss-nederland" in config_file:
             continue
         try:
             config, items = scrape_site.run(pathlib.Path(config_file))
+            # fallback: als output ontbreekt, leid hem af uit de config-filename
+            if "output" not in config or not config.get("output"):
+                fallback_output = os.path.join(
+                    OUTPUT_DIR, os.path.basename(config_file).replace(".yml", ".xml")
+                )
+                config = dict(config)  # kopie zodat we niet in-place muteren
+                config["output"] = fallback_output
             update_status(config, items, status="success")
         except Exception as e:
             print(f"❌ Fout bij verwerken {config_file}: {e}")
-            update
+            # zorg dat update_status altijd een output heeft om op te loggen
+            fallback_output = os.path.join(
+                OUTPUT_DIR, os.path.basename(config_file).replace(".yml", ".xml")
+            )
+            fail_config = {
+                "website": os.path.basename(config_file).replace(".yml", ""),
+                "feedbron": os.path.basename(config_file).replace(".yml", ".xml"),
+                "output": fallback_output
+            }
+            update_status(fail_config, [], status="failed")
+
+# -------------------------------
+# Main
+# -------------------------------
+if __name__ == "__main__":
+    scrape_from_configs()
+    scrape_wvn_vacatures()
+    scrape_iss_nieuws()
