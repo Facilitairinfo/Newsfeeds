@@ -196,12 +196,4 @@ def scrape_from_configs():
             update_status(config, items, status="success")
         except Exception as e:
             print(f"❌ Fout bij verwerken {config_file}: {e}")
-            update_status({"output": config_file}, [], status="failed")
-
-# -------------------------------
-# Main
-# -------------------------------
-if __name__ == "__main__":
-    scrape_from_configs()
-    scrape_wvn_vacatures()
-    scrape_iss_nieuws()
+            update
