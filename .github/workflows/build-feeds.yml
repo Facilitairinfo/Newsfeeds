@@ -9,7 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       # 1. Repo ophalen met volledige historie (voor rebase)
       - name: Checkout repository
@@ -28,6 +27,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+
+      # 3b. Playwright browsers installeren (nieuw toegevoegd)
+      - name: Install Playwright browsers
+        run: playwright install --with-deps
 
       # 4. Scraper draaien met retry bij 503 of andere fout
       - name: Run scraper with retry
