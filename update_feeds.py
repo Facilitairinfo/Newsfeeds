@@ -1,7 +1,8 @@
 import os
 import json
 import feedparser
-from datetime import datetime, timezone
+from datetime import datetime
+import pytz  # <-- toegevoegd
 
 # Map waarin de feedbestanden staan
 FEEDS_DIR = "docs"
@@ -22,11 +23,15 @@ def process_feed(file_path):
     # Status: True als er items zijn
     status = bool(parsed.entries)
 
+    # Nederlandse tijdzone instellen
+    tz_nl = pytz.timezone("Europe/Amsterdam")
+    last_checked_nl = datetime.now(tz_nl).strftime("%Y-%m-%d %H:%M")
+
     return {
         "website": website_url,
-        "feedbron": feed_url,  # <<< veldnaam consequent 'feedbron'
+        "feedbron": feed_url,
         "status": status,
-        "last_checked": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
+        "last_checked": last_checked_nl
     }
 
 def main():
@@ -48,8 +53,8 @@ def main():
     kapot = totaal - werkend
 
     print(f"{totaal} feeds verwerkt en feedstatus.json bijgewerkt.")
-    print(f"  ✔ {werkend} werkend")
-    print(f"  ✖ {kapot} niet‑werkend")
+    print(f" ✔ {werkend} werkend")
+    print(f" ✖ {kapot} niet‑werkend")
 
 if __name__ == "__main__":
     main()
