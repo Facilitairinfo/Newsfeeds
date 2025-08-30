@@ -33,7 +33,15 @@ jobs:
       - name: Install Playwright browsers
         run: playwright install --with-deps
 
-      # 4. Scraper draaien met retry bij 503 of andere fout
+      # 4. Altijd eerst laatste main ophalen en hard resetten
+      - name: Sync with latest main
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git fetch origin main
+          git reset --hard origin/main
+
+      # 5. Scraper draaien met retry bij 503 of andere fout
       - name: Run scraper with retry
         run: |
           run_scraper() {
@@ -51,14 +59,9 @@ jobs:
             sleep 10
           done
 
-      # 5. Commit en push alleen bij wijzigingen, zonder rebase-conflicten
+      # 6. Commit en push alleen bij wijzigingen
       - name: Commit and push changes
         run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-
           git add docs/*.xml docs/feedstatus.json docs/feedonderhoud.html 2>/dev/null || true
           git commit -m "Update feeds & status [skip ci]" || echo "Geen wijzigingen in output, commit wordt overgeslagen."
-
-          git pull --no-rebase --autostash
           git push origin main
