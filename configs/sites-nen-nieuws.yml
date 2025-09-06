@@ -1,7 +1,9 @@
 id: sites-nen-nieuws
 source_url: https://www.nen.nl/nieuws
 render: true
+scroll_to_bottom: true
 wait_for_selector: article.news-item
+wait_for_count: 5
 request:
   user_agent: Mozilla/5.0 (compatible; FeedBuilder/1.0)
   delay_seconds: 1.0
