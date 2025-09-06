@@ -28,17 +28,19 @@
     "last_checked": "2025-09-06 10:46"
   },
   "sites-werkenvoornederland-vacatures": {
-    "website": "Werken voor Nederland",
+    "website_name": "Werken voor Nederland",
+    "website_url": "",
     "feedbron": "sites-werkenvoornederland-vacatures.xml",
-    "status": "failed",
     "item_count": 0,
-    "last_checked": "2025-09-06 10:46"
+    "last_checked": "2025-09-06 13:21",
+    "status": false
   },
   "sites-iss-nederland-nieuws": {
-    "website": "ISS Nederland – Nieuws",
+    "website_name": "ISS Nederland – Nieuws",
+    "website_url": "",
     "feedbron": "sites-iss-nederland-nieuws.xml",
-    "status": "success",
     "item_count": 10,
-    "last_checked": "2025-09-06 10:46"
+    "last_checked": "2025-09-06 13:21",
+    "status": true
   }
 }
