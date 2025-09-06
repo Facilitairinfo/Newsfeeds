@@ -63,7 +63,7 @@ def main():
             feed_html = f'<a href="{feed["feedbron"]}" target="_blank" rel="noopener noreferrer">{os.path.basename(feed["feedbron"])}</a>'
             status_html = "✅" if feed["status"] else "❌"
 
-            f.write(f"<tr><td>{website_html}</td><td>{feed_html}</td><td>{feed[\"last_checked\"]}</td><td>{feed[\"item_count\"]}</td><td>{status_html}</td></tr>\n")
+            f.write(f"<tr><td>{website_html}</td><td>{feed_html}</td><td>{feed['last_checked']}</td><td>{feed['item_count']}</td><td>{status_html}</td></tr>\n")
 
         f.write("</table>\n</body></html>")
 
