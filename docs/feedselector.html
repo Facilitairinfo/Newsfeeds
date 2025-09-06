@@ -1,24 +1,90 @@
 <!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>Test FeedSelector</title></head>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <title>FeedSelector – Visuele RSS Builder</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 20px; }
+    .row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+    input[type="text"] { width: 520px; padding: 6px; }
+    input[name="feedName"] { width: 280px; }
+    button { padding: 6px 12px; font-size: 14px; }
+    code, pre { background: #f6f8fa; padding: 8px; border-radius: 6px; display: block; overflow:auto; }
+    ul { margin-top: 10px; }
+  </style>
+</head>
 <body>
-  <h1>Test FeedSelector</h1>
-  <input id="url" value="https://www.nen.nl/nieuws" style="width:400px">
-  <button onclick="openSelector()">Open selectiepagina</button>
-  <ul id="log"></ul>
+  <h1>🔧 Visuele Feed Builder</h1>
+
+  <div class="row">
+    <label>Website URL:
+      <input type="text" id="urlInput" placeholder="https://www.nen.nl/nieuws" />
+    </label>
+    <label>Feednaam:
+      <input type="text" id="feedName" name="feedName" placeholder="sites-nen-nieuws" />
+    </label>
+    <button id="openBtn">Open selectiepagina</button>
+  </div>
+
+  <h2>🔍 Geselecteerde elementen</h2>
+  <ul id="selectorsList"></ul>
+
+  <h2>📦 YAML-config</h2>
+  <pre id="yamlOut">Klik op elementen in de selectiepagina en druk op “Klaar”.</pre>
 
   <script>
-    function openSelector() {
-      const url = document.getElementById("url").value;
-      const proxy = "https://feedproxy.super-breeze-44c7.workers.dev/?url=" + encodeURIComponent(url);
-      window.open(proxy, "_blank", "width=1200,height=800");
-    }
+    const WORKER_URL = "https://feedproxy.super-breeze-44c7.workers.dev";
+    const selectorsList = document.getElementById("selectorsList");
+    const yamlOut = document.getElementById("yamlOut");
 
-    window.addEventListener("message", e => {
-      if (!e.origin.startsWith("https://feedproxy.super-breeze-44c7.workers.dev")) return;
-      const li = document.createElement("li");
-      li.textContent = "Geselecteerd: " + e.data.raw;
-      document.getElementById("log").appendChild(li);
+    document.getElementById("openBtn").addEventListener("click", () => {
+      const url = document.getElementById("urlInput").value.trim();
+      if (!url) return alert("Voer een geldige URL in.");
+      const proxied = `${WORKER_URL}?url=${encodeURIComponent(url)}`;
+      window.open(proxied, "_blank", "width=1200,height=800");
+      selectorsList.innerHTML = "";
+      yamlOut.textContent = "Selectiepagina geopend. Klik op elementen en druk op 'Klaar'.";
+    });
+
+    window.addEventListener("message", (e) => {
+      if (!e.origin.startsWith(WORKER_URL)) return;
+      const msg = e.data;
+      if (msg.type === "FEED_SELECT") {
+        const li = document.createElement("li");
+        li.textContent = `Geselecteerd (${msg.mode}): ${msg.raw}`;
+        selectorsList.appendChild(li);
+      }
+
+      if (msg.type === "FEED_DONE") {
+        const feedName = document.getElementById("feedName").value.trim() || "custom-feed";
+        const sourceUrl = msg.location;
+        const sel = msg.selections;
+
+        const yaml = [
+          `id: ${feedName}`,
+          `source_url: ${sourceUrl}`,
+          `render: true`,
+          `scroll_to_bottom: true`,
+          `wait_for_selector: ${sel.title}`,
+          `wait_for_count: 5`,
+          ``,
+          `selectors:`,
+          `  title: ${sel.title}`,
+          sel.date ? `  date: ${sel.date}` : `  # date: niet gekozen`,
+          sel.summary ? `  summary: ${sel.summary}` : `  # summary: niet gekozen`,
+          ``,
+          `output:`,
+          `  feed_file: docs/${feedName}.xml`,
+          `  site_name: ${new URL(sourceUrl).host}`,
+          `  site_url: ${sourceUrl}`,
+          ``,
+          `limits:`,
+          `  max_items: 20`,
+          `  dedupe_on: url`
+        ].join("\n");
+
+        yamlOut.textContent = yaml;
+      }
     });
   </script>
 </body>
