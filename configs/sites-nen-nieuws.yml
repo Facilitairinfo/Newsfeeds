@@ -1,6 +1,6 @@
 id: sites-nen-nieuws
 source_url: https://www.nen.nl/nieuws
-render: false
+render: true
 request:
   user_agent: Mozilla/5.0 (compatible; FeedBuilder/1.0)
   delay_seconds: 1.0
