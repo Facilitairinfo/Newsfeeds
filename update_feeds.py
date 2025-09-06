@@ -7,7 +7,7 @@ import pytz
 FEEDS_DIR = "docs"
 MIN_ITEMS_REQUIRED = 3
 
-# Alleen uitzonderingen of correcties hier opnemen
+# Eventuele uitzonderingen of handmatige URL-correcties
 NEWS_SOURCE_URLS = {
     "sites-iss-nederland-nieuws.xml": "https://www.issworld.com/nl-nl/insights/insights/nl/nieuws-en-pers",
     # voorbeeld: "bestandsnaam.xml": "https://andere-url.nl"
@@ -29,6 +29,8 @@ def process_feed(file_path):
     tz_nl = pytz.timezone("Europe/Amsterdam")
     last_checked_nl = datetime.now(tz_nl).strftime("%Y-%m-%d %H:%M")
 
+    print(f"🔍 {feed_filename}: {item_count} items gevonden → {'✅' if status else '❌'}")
+
     return {
         "website_name": website_name,
         "website_url": website_url,
@@ -44,7 +46,8 @@ def main():
     for filename in os.listdir(FEEDS_DIR):
         if filename.endswith(".xml"):
             file_path = os.path.join(FEEDS_DIR, filename)
-            feeds_status.append(process_feed(file_path))
+            feed_info = process_feed(file_path)
+            feeds_status.append(feed_info)
 
     # feedstatus.json
     with open(os.path.join(FEEDS_DIR, "feedstatus.json"), "w", encoding="utf-8") as f:
@@ -67,7 +70,7 @@ def main():
 
         f.write("</table>\n</body></html>")
 
-    print(f"{len(feeds_status)} feeds verwerkt en feedstatus.json + feedonderhoud.html bijgewerkt.")
+    print(f"\n📊 {len(feeds_status)} feeds verwerkt en feedstatus.json + feedonderhoud.html bijgewerkt.")
 
 if __name__ == "__main__":
     main()
