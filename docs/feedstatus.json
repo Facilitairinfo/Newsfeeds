@@ -4,41 +4,41 @@
     "feedbron": "sites-fmn-nieuws.xml",
     "status": "failed",
     "item_count": 0,
-    "last_checked": "2025-09-06 08:35"
+    "last_checked": "2025-09-06 08:36"
   },
   "sites-Envalue-nieuws": {
     "website": "sites-Envalue-nieuws",
     "feedbron": "sites-Envalue-nieuws.xml",
     "status": "failed",
     "item_count": 0,
-    "last_checked": "2025-09-06 08:35"
+    "last_checked": "2025-09-06 08:36"
   },
   "sites-cfp-nieuws": {
     "website": "sites-cfp-nieuws",
     "feedbron": "sites-cfp-nieuws.xml",
     "status": "failed",
     "item_count": 0,
-    "last_checked": "2025-09-06 08:35"
+    "last_checked": "2025-09-06 08:36"
   },
   "sites-nen-nieuws": {
     "website": "NEN – Nieuws en ontwikkelingen",
     "feedbron": "sites-nen-nieuws.xml",
     "status": "success",
     "item_count": 0,
-    "last_checked": "2025-09-06 08:35"
+    "last_checked": "2025-09-06 08:36"
   },
   "sites-werkenvoornederland-vacatures": {
     "website": "Werken voor Nederland",
     "feedbron": "sites-werkenvoornederland-vacatures.xml",
     "status": "failed",
     "item_count": 0,
-    "last_checked": "2025-09-06 08:35"
+    "last_checked": "2025-09-06 08:36"
   },
   "sites-iss-nederland-nieuws": {
     "website": "ISS Nederland – Nieuws",
     "feedbron": "sites-iss-nederland-nieuws.xml",
     "status": "success",
     "item_count": 10,
-    "last_checked": "2025-09-06 08:35"
+    "last_checked": "2025-09-06 08:36"
   }
 }
