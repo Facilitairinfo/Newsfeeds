@@ -189,23 +189,28 @@ def scrape_iss_nieuws():
 # -------------------------------
 def scrape_from_configs():
     configs = glob.glob(os.path.join(CONFIG_DIR, "*.yml"))
+    MIN_ITEMS_REQUIRED = 3
+
     for config_file in configs:
-        # skip de twee maatwerk-scrapers als er .yml varianten bestaan
         if "werkenvoornederland" in config_file or "iss-nederland" in config_file:
             continue
         try:
             config, items = scrape_site.run(pathlib.Path(config_file))
-            # fallback: als output ontbreekt, leid hem af uit de config-filename
+
+            if len(items) < MIN_ITEMS_REQUIRED:
+                print(f"⚠️ Te weinig items gevonden ({len(items)}), feed wordt niet gegenereerd: {config_file}")
+                continue
+
             if "output" not in config or not config.get("output"):
                 fallback_output = os.path.join(
                     OUTPUT_DIR, os.path.basename(config_file).replace(".yml", ".xml")
                 )
-                config = dict(config)  # kopie zodat we niet in-place muteren
+                config = dict(config)
                 config["output"] = fallback_output
+
             update_status(config, items, status="success")
         except Exception as e:
             print(f"❌ Fout bij verwerken {config_file}: {e}")
-            # zorg dat update_status altijd een output heeft om op te loggen
             fallback_output = os.path.join(
                 OUTPUT_DIR, os.path.basename(config_file).replace(".yml", ".xml")
             )
