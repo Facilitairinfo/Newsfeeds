@@ -10,7 +10,7 @@ def load_status():
 
 def generate_html(data):
     rows = []
-    for feed in sorted(data.values(), key=lambda x: x["website"]):
+    for feed in sorted(data.values(), key=lambda x: x["website_name"]):
         status_color = "✅" if feed["status"] == "success" else "❌"
         rows.append(f"""
         <tr>
