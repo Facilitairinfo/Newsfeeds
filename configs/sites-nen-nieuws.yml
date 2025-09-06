@@ -1,34 +1,27 @@
-site:
-  naam: nen-nieuws
-  titel: NEN – Nieuws en ontwikkelingen
-  type: html
-  bron:
-    url: "https://www.nen.nl/nieuws-overzicht"
+id: sites-nen-nieuws
+source_url: https://www.nen.nl/nieuws
+render: false
+request:
+  user_agent: Mozilla/5.0 (compatible; FeedBuilder/1.0)
+  delay_seconds: 1.0
+  max_retries: 3
 
-  selectors:
-    items: "div.news-item"
-    titel: "h2.news-title"
-    link: "a::attr(href)"
-    teaser: "div.news-intro"
-    publicatie_datum: "span.news-date"
-    afbeelding: "img::attr(src)"
+selectors:
+  item: article.news-item
+  title: h2.news-item__title a
+  url: h2.news-item__title a@href
+  date: time@datetime
+  summary: p.news-item__intro
 
-  mapping:
-    titel: "titel"
-    link: "link"
-    beschrijving: "teaser"
-    publicatie_datum: "publicatie_datum"
-    afbeelding: "afbeelding"
+date:
+  input_format: auto
+  tz: Europe/Amsterdam
 
-  transformaties:
-    publicatie_datum:
-      - type: date_format
-        van: "d MMMM yyyy"
-        naar: "EEE, dd MMM yyyy 00:00:00 Z"
+output:
+  feed_file: docs/sites-nen-nieuws.xml
+  site_name: NEN – Nieuws en ontwikkelingen
+  site_url: https://www.nen.nl/nieuws
 
-  opties:
-    output: "docs/sites-nen-nieuws.xml"
-    feed_id: "https://facilitairinfo.github.io/Newsfeeds/sites-nen-nieuws.xml"
-    datumformaat: "EEE, dd MMM yyyy HH:mm:ss Z"
-    encoding: "UTF-8"
-    absolute_links: true
+limits:
+  max_items: 20
+  dedupe_on: url
