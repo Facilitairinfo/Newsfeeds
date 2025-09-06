@@ -64,4 +64,43 @@
     }
   </script>
 </body>
+  <script>
+window.addEventListener("message", (e) => {
+  if (!e.origin.startsWith("https://feedproxy.super-breeze-44c7.workers.dev")) return;
+
+  const msg = e.data;
+  if (msg.type === "FEED_SELECT") {
+    const li = document.createElement("li");
+    li.textContent = `Geselecteerd (${msg.mode}): ${msg.raw}`;
+    document.getElementById("selectorsList").appendChild(li);
+  }
+
+  if (msg.type === "FEED_DONE") {
+    const yaml = [
+      `id: custom-feed`,
+      `source_url: ${msg.location}`,
+      `render: true`,
+      `scroll_to_bottom: true`,
+      `wait_for_selector: ${msg.selections.title}`,
+      `wait_for_count: 5`,
+      ``,
+      `selectors:`,
+      `  title: ${msg.selections.title}`,
+      `  date: ${msg.selections.date || "# niet gekozen"}`,
+      `  summary: ${msg.selections.summary || "# niet gekozen"}`,
+      ``,
+      `output:`,
+      `  feed_file: docs/custom-feed.xml`,
+      `  site_name: ${new URL(msg.location).host}`,
+      `  site_url: ${msg.location}`,
+      ``,
+      `limits:`,
+      `  max_items: 20`,
+      `  dedupe_on: url`
+    ].join("\n");
+
+    document.getElementById("yamlOut").textContent = yaml;
+  }
+});
+</script>
 </html>
