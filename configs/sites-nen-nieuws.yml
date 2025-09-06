@@ -1,23 +1,23 @@
 id: sites-nen-nieuws
 source_url: https://www.nen.nl/nieuws
-render: false
-api:
-  url: https://www.nen.nl/api/news?page=1&pageSize=10
-  method: GET
-  headers:
-    Accept: application/json
-    User-Agent: Mozilla/5.0 (compatible; FeedBuilder/1.0)
-  pagination:
-    param: page
-    start: 1
-    max_pages: 3
+render: true
+scroll_to_bottom: true
+scroll_delay_seconds: 2
+wait_for_selector: article.news-item
+wait_for_count: 5
+screenshot_on_render: true
 
-mapping:
-  items: data
-  title: title
-  url: url
-  date: publishDate
-  summary: summary
+request:
+  user_agent: Mozilla/5.0 (compatible; FeedBuilder/1.0)
+  delay_seconds: 1.0
+  max_retries: 3
+
+selectors:
+  item: article.news-item
+  title: h2.news-item__title a
+  url: h2.news-item__title a@href
+  date: time@datetime
+  summary: p.news-item__intro
 
 date:
   input_format: auto
@@ -29,5 +29,5 @@ output:
   site_url: https://www.nen.nl/nieuws
 
 limits:
-  max_items: 30
+  max_items: 20
   dedupe_on: url
