@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>FeedSelector – Visuele RSS Builder</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    iframe { width: 100%; height: 600px; border: 1px solid #ccc; }
+    .controls { margin-bottom: 10px; }
+    .highlight { outline: 2px solid red !important; }
+  </style>
+</head>
+<body>
+  <h1>🔧 Visuele Feed Builder</h1>
+  <div class="controls">
+    <label>Website URL: <input type="text" id="urlInput" placeholder="https://www.nen.nl/nieuws" style="width: 400px;"></label>
+    <button onclick="loadPage()">Laad pagina</button>
+  </div>
+
+  <iframe id="previewFrame"></iframe>
+
+  <p>Klik op een element in de iframe om een selector te kiezen (titel, datum, samenvatting).</p>
+  <ul id="selectorsList"></ul>
+
+  <script>
+    function loadPage() {
+      const url = document.getElementById("urlInput").value;
+      document.getElementById("previewFrame").src = url;
+    }
+
+    document.getElementById("previewFrame").addEventListener("load", () => {
+      const frame = document.getElementById("previewFrame").contentWindow.document;
+      frame.body.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const path = getCssSelector(e.target);
+        e.target.classList.add("highlight");
+        const li = document.createElement("li");
+        li.textContent = `Geselecteerd: ${path}`;
+        document.getElementById("selectorsList").appendChild(li);
+      }, true);
+    });
+
+    function getCssSelector(el) {
+      if (!(el instanceof Element)) return;
+      const path = [];
+      while (el.nodeType === Node.ELEMENT_NODE) {
+        let selector = el.nodeName.toLowerCase();
+        if (el.id) {
+          selector += "#" + el.id;
+          path.unshift(selector);
+          break;
+        } else {
+          let sib = el, nth = 1;
+          while ((sib = sib.previousElementSibling)) {
+            if (sib.nodeName.toLowerCase() === selector) nth++;
+          }
+          selector += `:nth-of-type(${nth})`;
+        }
+        path.unshift(selector);
+        el = el.parentNode;
+      }
+      return path.join(" > ");
+    }
+  </script>
+</body>
+</html>
