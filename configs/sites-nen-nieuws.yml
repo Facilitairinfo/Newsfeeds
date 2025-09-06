@@ -3,8 +3,10 @@ source_url: https://www.nen.nl/nieuws
 render: true
 scroll_to_bottom: true
 scroll_delay_seconds: 2
-wait_for_selector: article.news-item
-wait_for_count: 5
+max_scroll_attempts: 5
+wait_for_selector: h2.news-item__title a
+wait_for_count: 3
+max_render_wait_seconds: 20
 screenshot_on_render: true
 
 request:
