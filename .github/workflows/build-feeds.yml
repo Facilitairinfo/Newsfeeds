@@ -1,4 +1,5 @@
-name: 🛠️ Build & Scrape Feeds 🔄  # Heractiveer workflow zichtbaar in Actions-tab
+# Heractiveer handmatige workflowregistratie
+name: 🛠️ Build & Scrape Feeds 🔄
 
 on:
   workflow_dispatch:
