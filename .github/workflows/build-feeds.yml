@@ -1,5 +1,5 @@
-name: 🛠️ Build & Scrape Feeds 🔄
-    # Heractiveer workflow zichtbaar in Actions-tab    
+name: 🛠️ Build & Scrape Feeds 🔄  # Heractiveer workflow zichtbaar in Actions-tab
+
 on:
   workflow_dispatch:
   schedule:
