@@ -11,10 +11,10 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.25);
     }
     #__fi_toolbar select, #__fi_toolbar button { font-size: 13px; }
-    #__fi_overlay {
+    .__fi_overlay {
       position: absolute; border: 2px solid limegreen;
       background: rgba(0,255,0,0.2); pointer-events: none;
-      z-index: 9999998; display: none;
+      z-index: 9999998; display: block;
     }
   `;
   document.head.appendChild(style);
@@ -30,18 +30,18 @@
         <option value="image">Afbeelding</option>
       </select>
     </label>
+    <button id="__fi_clear">Wissen</button>
     <button id="__fi_done">Klaar</button>
     <span style="margin-left:auto;opacity:.8">FI Selector actief</span>
   `;
   document.body.appendChild(toolbar);
 
-  const overlay = document.createElement("div");
-  overlay.id = "__fi_overlay";
-  document.body.appendChild(overlay);
-
   const modeEl = document.getElementById("__fi_mode");
+  const clearBtn = document.getElementById("__fi_clear");
   const doneBtn = document.getElementById("__fi_done");
+
   const selections = { title: "", date: "", summary: "", image: "" };
+  const overlays = {};
 
   function getSelector(el) {
     if (!el || !el.tagName) return "";
@@ -69,32 +69,35 @@
     return { x: r.left + scrollX, y: r.top + scrollY, w: r.width, h: r.height };
   }
 
-  function showOverlay(box) {
-    if (!box || box.w <= 0 || box.h <= 0) {
-      overlay.style.display = "none";
-      return;
-    }
-    overlay.style.display = "block";
-    overlay.style.left = box.x + "px";
-    overlay.style.top = box.y + "px";
-    overlay.style.width = box.w + "px";
-    overlay.style.height = box.h + "px";
+  function createOverlay(box) {
+    const o = document.createElement("div");
+    o.className = "__fi_overlay";
+    o.style.left = box.x + "px";
+    o.style.top = box.y + "px";
+    o.style.width = box.w + "px";
+    o.style.height = box.h + "px";
+    document.body.appendChild(o);
+    return o;
   }
-
-  document.addEventListener("mousemove", (e) => {
-    if (e.target.closest("#__fi_toolbar")) return;
-    try { showOverlay(bbox(e.target)); } catch { overlay.style.display = "none"; }
-  }, true);
 
   document.addEventListener("click", (e) => {
     if (e.target.closest("#__fi_toolbar")) return;
     e.preventDefault(); e.stopPropagation();
-    const sel = getSelector(e.target);
+    const el = e.target;
     const mode = modeEl.value;
+    const sel = getSelector(el);
+    const box = bbox(el);
     selections[mode] = sel;
     console.log(`Geselecteerd (${mode}):`, sel);
-    showOverlay(bbox(e.target));
+
+    if (overlays[mode]) overlays[mode].remove();
+    overlays[mode] = createOverlay(box);
   }, true);
+
+  clearBtn.addEventListener("click", () => {
+    Object.values(overlays).forEach(o => o.remove());
+    Object.keys(selections).forEach(k => selections[k] = "");
+  });
 
   doneBtn.addEventListener("click", () => {
     const payload = {
