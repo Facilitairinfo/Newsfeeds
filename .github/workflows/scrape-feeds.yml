@@ -3,7 +3,7 @@ name: 🧪 Scrape Feeds Test
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/5 * * * *"  # Elke 5 minuten
+  - cron: "0 * * * *"  # Elke uur
 
 jobs:
   scrape:
