@@ -1,0 +1,11 @@
+name: 🧪 Handmatige Activatie Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bevestiging
+        run: echo "✅ Workflow is handmatig gestart"
