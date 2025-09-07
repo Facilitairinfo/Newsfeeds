@@ -1,29 +1,31 @@
 site:
   naam: werkenvoornederland-vacatures
-  titel: Werken voor Nederland – Vacatures
+  titel: "Werken voor Nederland \u2013 Vacatures"
   type: json
   bron:
-    url: "https://api.cso20.net/v1/JobAPI/GetJobs"
+    url: https://api.cso20.net/v1/JobAPI/GetJobs
     params:
-      Type: "vacature"
-      Vakgebied: "CVG.09"
-      WerkDenkniveau: "CWD.08,CWD.04"
-      PageSize: 6                      # Max 6 resultaten per call
+      Type: vacature
+      Vakgebied: CVG.09
+      WerkDenkniveau: CWD.08,CWD.04
+      PageSize: 6
       PageNumber: 1
-      Sortering: "PublicatieDatum_desc" # Nieuwste eerst
-      PublicatieDatumVanaf: "{{ vandaag_minus_2_dagen }}"
+      Sortering: PublicatieDatum_desc
+      PublicatieDatumVanaf: '{{ vandaag_minus_2_dagen }}'
   mapping:
-    titel: "Titel"
-    link: "Url"
-    organisatie: "Organisatie"
-    publicatie_datum: "PublicatieDatum"
-    locatie: "Standplaats"
+    titel: Titel
+    link: Url
+    organisatie: Organisatie
+    publicatie_datum: PublicatieDatum
+    locatie: Standplaats
   opties:
-    output: "docs/sites-werkenvoornederland-vacatures.xml"
-    feed_id: "https://facilitairinfo.github.io/Newsfeeds/sites-werkenvoornederland-vacatures.xml"
+    output: docs/sites-werkenvoornederland-vacatures.xml
+    feed_id: https://facilitairinfo.github.io/Newsfeeds/sites-werkenvoornederland-vacatures.xml
     paginering:
-      parameter: "PageNumber"
+      parameter: PageNumber
       start: 1
       max_paginas: 1
-    datumformaat: "yyyy-MM-dd'T'HH:mm:ss"
-    encoding: "UTF-8"
+    datumformaat: yyyy-MM-dd'T'HH:mm:ss
+    encoding: UTF-8
+limits:
+  max_items: 5

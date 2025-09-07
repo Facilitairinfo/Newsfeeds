@@ -1,10 +1,12 @@
 name: CFP
 url: https://cfp.nl/nieuws-en-cases/
 selectors:
-  item: "div.article-card"
-  title: "h3"
-  link: "a"
-  date: "span.date"
-date_format: "%d %B %Y"
+  item: div.article-card
+  title: h3
+  link: a
+  date: span.date
+date_format: '%d %B %Y'
 use_playwright: true
 output: docs/sites-cfp-nieuws.xml
+limits:
+  max_items: 5

@@ -4,27 +4,29 @@ description: Laatste nieuws van Facility Management Nederland
 language: nl
 max_items: 12
 sources:
-  - url: https://fmn.nl/actueel/nieuws
-    item_selector:
-      - "article"
-      - ".card"
-      - "li"
-    title_selector:
-      - "h2 a"
-      - "h3 a"
-      - ".card__title a"
-      - "a"
-    link_selector:
-      - "h2 a"
-      - "h3 a"
-      - ".card__title a"
-      - "a"
-    summary_selector:
-      - ".card__intro"
-      - ".intro"
-      - "p"
-    date_selector:
-      - "time"
-      - ".card__meta time"
-      - ".date"
-    date_attr: datetime
+- url: https://fmn.nl/actueel/nieuws
+  item_selector:
+  - article
+  - .card
+  - li
+  title_selector:
+  - h2 a
+  - h3 a
+  - .card__title a
+  - a
+  link_selector:
+  - h2 a
+  - h3 a
+  - .card__title a
+  - a
+  summary_selector:
+  - .card__intro
+  - .intro
+  - p
+  date_selector:
+  - time
+  - .card__meta time
+  - .date
+  date_attr: datetime
+limits:
+  max_items: 5
