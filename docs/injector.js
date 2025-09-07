@@ -101,13 +101,11 @@
 
   doneBtn.addEventListener("click", () => {
     const payload = {
-      type: "FI_FEED_DONE",
       selections,
       location: location.href
     };
-    try { window.opener && window.opener.postMessage(payload, "*"); } catch {}
-    try { window.parent && window.parent.postMessage(payload, "*"); } catch {}
-    console.log("FI_FEED_DONE", payload);
-    alert("Selecties verzonden.");
+    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+    const target = `https://facilitairinfo.github.io/Newsfeeds/feedselector.html#${encoded}`;
+    window.open(target, "_blank");
   });
 })();
