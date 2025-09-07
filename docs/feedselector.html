@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Visuele Feed Builder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body { font-family: system-ui, sans-serif; margin: 20px; }
     .row { display:flex; gap:10px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
@@ -27,74 +28,80 @@
     <button id="openBtn">Open selectiepagina</button>
   </div>
 
-  <p class="muted">Tip: sta pop-ups toe voor deze site. Sluit oude selectie-tabbladen voordat je een nieuwe opent.</p>
+  <p class="muted">Tip: sta pop-ups toe. Je kunt ook de bookmarklet gebruiken om de selector op een bestaand tabblad te injecteren.</p>
 
   <h2>🔍 Geselecteerde elementen</h2>
   <ul id="selectorsList"></ul>
 
   <h2>📦 YAML-config</h2>
-  <pre id="yamlOut">Klik op elementen in de selectiepagina en druk op “Klaar”.</pre>
+  <pre id="yamlOut">Klik op elementen in de selectiepagina, dan “Klaar”.</pre>
 
   <script>
     const WORKER_URL = "https://feedproxy.super-breeze-44c7.workers.dev";
     const selectorsList = document.getElementById("selectorsList");
     const yamlOut = document.getElementById("yamlOut");
-
     let childWin = null;
 
     document.getElementById("openBtn").addEventListener("click", () => {
       const url = document.getElementById("urlInput").value.trim();
       if (!url) return alert("Voer een geldige URL in.");
-      const proxied = \`\${WORKER_URL}?url=\${encodeURIComponent(url)}\`;
+      const proxied = `${WORKER_URL}?url=${encodeURIComponent(url)}`;
       childWin = window.open(proxied, "_blank", "width=1200,height=800");
-      if (!childWin) {
-        alert("Popup geblokkeerd. Sta pop-ups toe en probeer opnieuw.");
-        return;
-      }
+      if (!childWin) { alert("Popup geblokkeerd. Sta pop-ups toe en probeer opnieuw."); return; }
       selectorsList.innerHTML = "";
-      yamlOut.textContent = "Selectiepagina geopend. Klik op elementen en druk op 'Klaar'.";
+      yamlOut.textContent = "Selectiepagina geopend. Gebruik je bookmarklet of ingespoten toolbar, klik 'Klaar' als je klaar bent.";
     });
 
-    window.addEventListener("message", (e) => {
-      // Alleen berichten van het venster dat wij hebben geopend
-      if (!childWin || e.source !== childWin) return;
-
-      const msg = e.data || {};
-      if (msg.type === "FEED_SELECT") {
+    function renderSelections(sel, sourceUrl) {
+      selectorsList.innerHTML = "";
+      const add = (label, value) => {
         const li = document.createElement("li");
-        li.textContent = \`Geselecteerd (\${msg.mode || "—"}): \${msg.raw}\`;
+        li.textContent = `${label}: ${value || "–"}`;
         selectorsList.appendChild(li);
-      }
+      };
+      add("item", sel.item);
+      add("title (relatief)", sel.title);
+      add("date (relatief)", sel.date);
+      add("summary (relatief)", sel.summary);
+      add("link (relatief)", sel.link);
+      add("image (relatief)", sel.image);
 
-      if (msg.type === "FEED_DONE") {
-        const feedName = document.getElementById("feedName").value.trim() || "custom-feed";
-        const sourceUrl = msg.location || "";
-        const sel = msg.selections || {};
+      const feedName = document.getElementById("feedName").value.trim() || "custom-feed";
 
-        const yaml = [
-          \`id: \${feedName}\`,
-          \`source_url: \${sourceUrl}\`,
-          \`render: true\`,
-          \`scroll_to_bottom: true\`,
-          \`wait_for_selector: \${sel.title || ""}\`,
-          \`wait_for_count: 5\`,
-          "",
-          "selectors:",
-          \`  title: \${sel.title || ""}\`,
-          sel.date ? \`  date: \${sel.date}\` : "  # date: niet gekozen",
-          sel.summary ? \`  summary: \${sel.summary}\` : "  # summary: niet gekozen",
-          "",
-          "output:",
-          \`  feed_file: docs/\${feedName}.xml\`,
-          \`  site_name: \${sourceUrl ? new URL(sourceUrl).host : ""}\`,
-          \`  site_url: \${sourceUrl}\`,
-          "",
-          "limits:",
-          "  max_items: 20",
-          "  dedupe_on: url"
-        ].join("\\n");
+      const yaml = [
+        `id: ${feedName}`,
+        `source_url: ${sourceUrl || ""}`,
+        `render: true`,
+        `scroll_to_bottom: true`,
+        ``,
+        `selectors:`,
+        `  item: ${sel.item || ""}`,
+        `  title: ${sel.title || ""}`,
+        sel.date ? `  date: ${sel.date}` : `  # date: niet gekozen`,
+        sel.summary ? `  summary: ${sel.summary}` : `  # summary: niet gekozen`,
+        sel.link ? `  link: ${sel.link}` : `  # link: niet gekozen`,
+        sel.image ? `  image: ${sel.image}` : `  # image: niet gekozen`,
+        ``,
+        `output:`,
+        `  feed_file: docs/${feedName}.xml`,
+        `  site_name: ${sourceUrl ? new URL(sourceUrl).host : ""}`,
+        `  site_url: ${sourceUrl || ""}`,
+        ``,
+        `limits:`,
+        `  max_items: 30`,
+        `  dedupe_on: url`
+      ].join("\n");
 
-        yamlOut.textContent = yaml;
+      yamlOut.textContent = yaml;
+    }
+
+    // Ontvangst van resultaten uit injector (bookmarklet of via Worker-opener)
+    window.addEventListener("message", (e) => {
+      // Beperk op ons geopend venster als die bestaat
+      if (childWin && e.source !== childWin) return;
+      const msg = e.data || {};
+      if (msg.type === "FI_FEED_DONE") {
+        renderSelections(msg.selections || {}, msg.location || "");
       }
     });
   </script>
