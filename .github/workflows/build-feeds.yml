@@ -1,5 +1,6 @@
-name: 🛠️ Build & Scrape Feeds
-
+name: 🛠️ Build & Scrape Feeds 🔄
+    # Forceer herregistratie van workflow voor Actions-tab
+    
 on:
   workflow_dispatch:
   schedule:
