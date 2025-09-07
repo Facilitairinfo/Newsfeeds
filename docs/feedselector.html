@@ -13,65 +13,63 @@
 <body>
   <h1>🔧 Feedconfig Generator</h1>
 
-  <label>Website URL:<br>
-    <input type="text" id="urlInput" placeholder="https://www.nen.nl/nieuws" />
-  </label><br>
   <label>Feednaam:<br>
-    <input type="text" id="feedName" placeholder="sites-nen-nieuws" />
+    <input type="text" id="feedName" placeholder="custom-feed" />
   </label><br>
-  <button id="openBtn">Open selectiepagina</button>
 
   <h2>📦 YAML-config</h2>
-  <pre id="yamlOut">Klik op elementen en druk op “Klaar” in de selectiepagina.</pre>
+  <pre id="yamlOut">Wacht op selectie...</pre>
 
   <script>
-    const WORKER_URL = "https://feedproxy.super-breeze-44c7.workers.dev";
-    const yamlOut = document.getElementById("yamlOut");
-    let childWin = null;
-
-    document.getElementById("openBtn").addEventListener("click", () => {
-      const url = document.getElementById("urlInput").value.trim();
-      if (!url) return alert("Voer een geldige URL in.");
-      const proxied = `${WORKER_URL}?url=${encodeURIComponent(url)}`;
-      childWin = window.open(proxied, "_blank", "width=1200,height=800");
-      if (!childWin) { alert("Popup geblokkeerd."); return; }
-      yamlOut.textContent = "Selectiepagina geopend. Klik op elementen en druk op 'Klaar'.";
-    });
-
-    window.addEventListener("message", (e) => {
-      if (childWin && e.source !== childWin) return;
-      const msg = e.data || {};
-      if (msg.type === "FI_FEED_DONE") {
-        const sel = msg.selections || {};
-        const sourceUrl = msg.location || "";
-        const feedName = document.getElementById("feedName").value.trim() || "custom-feed";
-
-        const yaml = [
-          `id: ${feedName}`,
-          `source_url: ${sourceUrl}`,
-          `render: true`,
-          `scroll_to_bottom: true`,
-          `wait_for_selector: ${sel.title || ""}`,
-          `wait_for_count: 5`,
-          ``,
-          `selectors:`,
-          `  title: ${sel.title || ""}`,
-          sel.date ? `  date: ${sel.date}` : `  # date: niet gekozen`,
-          sel.summary ? `  summary: ${sel.summary}` : `  # summary: niet gekozen`,
-          sel.image ? `  image: ${sel.image}` : `  # image: niet gekozen`,
-          ``,
-          `output:`,
-          `  feed_file: docs/${feedName}.xml`,
-          `  site_name: ${sourceUrl ? new URL(sourceUrl).host : ""}`,
-          `  site_url: ${sourceUrl}`,
-          ``,
-          `limits:`,
-          `  max_items: 20`,
-          `  dedupe_on: url`
-        ].join("\n");
-
-        yamlOut.textContent = yaml;
+    function decodeHash() {
+      const hash = location.hash.slice(1);
+      if (!hash) return null;
+      try {
+        const json = decodeURIComponent(escape(atob(hash)));
+        return JSON.parse(json);
+      } catch (err) {
+        console.warn("Kon selectie niet decoderen:", err);
+        return null;
       }
+    }
+
+    function renderYAML(data) {
+      const sel = data.selections || {};
+      const sourceUrl = data.location || "";
+      const feedName = document.getElementById("feedName").value.trim() || "custom-feed";
+
+      const yaml = [
+        `id: ${feedName}`,
+        `source_url: ${sourceUrl}`,
+        `render: true`,
+        `scroll_to_bottom: true`,
+        `wait_for_selector: ${sel.title || ""}`,
+        `wait_for_count: 5`,
+        ``,
+        `selectors:`,
+        `  title: ${sel.title || ""}`,
+        sel.date ? `  date: ${sel.date}` : `  # date: niet gekozen`,
+        sel.summary ? `  summary: ${sel.summary}` : `  # summary: niet gekozen`,
+        sel.image ? `  image: ${sel.image}` : `  # image: niet gekozen`,
+        ``,
+        `output:`,
+        `  feed_file: docs/${feedName}.xml`,
+        `  site_name: ${sourceUrl ? new URL(sourceUrl).host : ""}`,
+        `  site_url: ${sourceUrl}`,
+        ``,
+        `limits:`,
+        `  max_items: 20`,
+        `  dedupe_on: url`
+      ].join("\n");
+
+      document.getElementById("yamlOut").textContent = yaml;
+    }
+
+    const data = decodeHash();
+    if (data) renderYAML(data);
+
+    document.getElementById("feedName").addEventListener("input", () => {
+      if (data) renderYAML(data);
     });
   </script>
 </body>
