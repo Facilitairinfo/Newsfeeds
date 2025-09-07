@@ -17,5 +17,5 @@ output:
   site_url: https://www.nen.nl/nieuws
 
 limits:
-  max_items: 20
+  max_items: 5
   dedupe_on: url
