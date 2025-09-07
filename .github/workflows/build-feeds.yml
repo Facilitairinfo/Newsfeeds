@@ -1,10 +1,10 @@
-name: Build & Scrape Feeds
+name: 🛠️ Build & Scrape Feeds
 
 on:
+  workflow_dispatch:
   schedule:
     # Draait om 04:00, 07:00, 08:00, 09:00, 10:00, 13:00, 16:00 en 19:00 NL tijd
     - cron: "0 2,5,6,7,8,11,14,17 * * *"  # UTC tijden
-  workflow_dispatch:
 
 jobs:
   build:
@@ -60,7 +60,11 @@ jobs:
             sleep 10
           done
 
-      # 7. Commit en push alleen bij wijzigingen
+      # 7. Genereer feedstatus dashboard
+      - name: Genereer feedstatus dashboard
+        run: python scripts/gen_feedstatus.py
+
+      # 8. Commit en push alleen bij wijzigingen
       - name: Commit and push changes
         run: |
           git add docs/*.xml docs/feedstatus.json docs/feedonderhoud.html 2>/dev/null || true
