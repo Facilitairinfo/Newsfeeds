@@ -1,0 +1,11 @@
+name: 🔧 Test Workflow Activatie
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo test
+        run: echo "✅ Workflow is handmatig startbaar"
