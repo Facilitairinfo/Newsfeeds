@@ -265,43 +265,64 @@
   }
 
   function preview() {
-    clearFieldOverlays();
-    clearItemOutlines();
-    countsEl.textContent = "–";
+  clearFieldOverlays();
+  clearItemOutlines();
+  countsEl.textContent = "–";
 
-    if (!state.itemSel) {
-      itemOverlay.style.display = "none";
-      return;
-    }
-
-    const items = Array.from(qsa(state.itemSel));
-    if (!items.length) {
-      itemOverlay.style.display = "none";
-      return;
-    }
-
-    // Teken alle item-containers (gestippeld), highlight eerste item (geel)
-    items.forEach(n => addItemOutline(rect(n)));
-    placeOverlay(itemOverlay, rect(items[0]));
-
-    const keys = ["title","date","summary","link","image"];
-    const counts = Object.fromEntries(keys.map(k => [k,0]));
-
-    for (const item of items) {
-      for (const key of keys) {
-        const rel = state.fields[key];
-        if (!rel) continue;
-        let nodes = [];
-        try { nodes = item.querySelectorAll(rel.replace(/^:scope\s*/,"")); } catch {}
-        nodes.forEach(n => {
-          const r = rect(n);
-          if (r.width>0 && r.height>0) { addFieldOverlay(r); counts[key]++; }
-        });
-      }
-    }
-    const flags = keys.filter(k => state.fields[k]).map(k => `${k}:${counts[k]}`).join("  ");
-    countsEl.textContent = flags || "–";
+  if (!state.itemSel) {
+    itemOverlay.style.display = "none";
+    return;
   }
+
+  let items = [];
+  try {
+    items = Array.from(qsa(state.itemSel)).slice(0, 50); // max 50 items
+  } catch (err) {
+    console.warn("Item selector faalt:", err);
+    return;
+  }
+
+  if (!items.length) {
+    itemOverlay.style.display = "none";
+    return;
+  }
+
+  // Teken alle item-containers (gestippeld), highlight eerste item (geel)
+  items.forEach(n => {
+    try { addItemOutline(rect(n)); } catch {}
+  });
+  try { placeOverlay(itemOverlay, rect(items[0])); } catch {}
+
+  const keys = ["title","date","summary","link","image"];
+  const counts = Object.fromEntries(keys.map(k => [k,0]));
+
+  for (const item of items) {
+    for (const key of keys) {
+      const rel = state.fields[key];
+      if (!rel) continue;
+      let nodes = [];
+      try {
+        nodes = item.querySelectorAll(rel.replace(/^:scope\s*/,""));
+      } catch (err) {
+        console.warn(`Selector voor ${key} faalt:`, rel, err);
+        continue;
+      }
+      nodes.forEach(n => {
+        try {
+          const r = rect(n);
+          if (r.width>0 && r.height>0) {
+            addFieldOverlay(r);
+            counts[key]++;
+          }
+        } catch {}
+      });
+    }
+  }
+
+  const flags = keys.filter(k => state.fields[k]).map(k => `${k}:${counts[k]}`).join("  ");
+  countsEl.textContent = flags || "–";
+  console.log("🔍 Preview klaar:", counts);
+}
 
   // ---------- Events ----------
   document.addEventListener("mousemove", (e) => {
