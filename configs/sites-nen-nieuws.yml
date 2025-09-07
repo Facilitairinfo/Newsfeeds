@@ -37,3 +37,8 @@ output:
 
 limits:
   max_items: 5
+
+render: true
+scroll_to_bottom: true
+wait_for_selector: "article.blog-posts-post"
+wait_for_count: 3
