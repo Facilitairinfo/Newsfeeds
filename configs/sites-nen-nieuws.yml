@@ -2,32 +2,18 @@ id: sites-nen-nieuws
 source_url: https://www.nen.nl/nieuws
 render: true
 scroll_to_bottom: true
-scroll_delay_seconds: 2
-max_scroll_attempts: 5
-wait_for_selector: h2.news-item__title a
-wait_for_count: 3
-max_render_wait_seconds: 20
-screenshot_on_render: true
-
-request:
-  user_agent: Mozilla/5.0 (compatible; FeedBuilder/1.0)
-  delay_seconds: 1.0
-  max_retries: 3
+wait_for_selector: body.aw_blog-index-index.page-layout-2columns-right > div.page-wrapper > main.page-main > div.columns > div.column.main > div.blog-posts > article.blog-posts-post.blog-post > header.blog-post-header > h2.blog-post-title > a.blog-post-title-link
+wait_for_count: 5
 
 selectors:
-  item: article.news-item
-  title: h2.news-item__title a
-  url: h2.news-item__title a@href
-  date: time@datetime
-  summary: p.news-item__intro
-
-date:
-  input_format: auto
-  tz: Europe/Amsterdam
+  title: body.aw_blog-index-index.page-layout-2columns-right > div.page-wrapper > main.page-main > div.columns > div.column.main > div.blog-posts > article.blog-posts-post.blog-post > header.blog-post-header > h2.blog-post-title > a.blog-post-title-link
+  date: body.aw_blog-index-index.page-layout-2columns-right > div.page-wrapper > main.page-main > div.columns > div.column.main > div.blog-posts > article.blog-posts-post.blog-post > header.blog-post-header > ul.blog-post-info > li.blog-post-info-item
+  summary: article.blog-posts-post.blog-post > div.blog-post-content > div:nth-of-type(1) > div:nth-of-type(1) > div.pagebuilder-column-group > div.pagebuilder-column-line > div.pagebuilder-column > div:nth-of-type(1) > p:nth-of-type(1) > strong:nth-of-type(1)
+  # image: niet gekozen
 
 output:
   feed_file: docs/sites-nen-nieuws.xml
-  site_name: NEN – Nieuws en ontwikkelingen
+  site_name: www.nen.nl
   site_url: https://www.nen.nl/nieuws
 
 limits:
