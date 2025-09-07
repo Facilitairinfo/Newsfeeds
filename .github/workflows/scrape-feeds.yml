@@ -1,5 +1,4 @@
-# werkt alleen op zondag
-name: 🧪 Scrape Feeds Test
+name: 🛠️ Build & Scrape Feeds
 
 on:
   workflow_dispatch:
