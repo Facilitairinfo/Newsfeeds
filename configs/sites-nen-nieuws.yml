@@ -8,7 +8,7 @@ wait_for_count: 5
 selectors:
   title: body.aw_blog-index-index.page-layout-2columns-right > div.page-wrapper > main.page-main > div.columns > div.column.main > div.blog-posts > article.blog-posts-post.blog-post > header.blog-post-header > h2.blog-post-title > a.blog-post-title-link
   date: body.aw_blog-index-index.page-layout-2columns-right > div.page-wrapper > main.page-main > div.columns > div.column.main > div.blog-posts > article.blog-posts-post.blog-post > header.blog-post-header > ul.blog-post-info > li.blog-post-info-item
-  summary: article.blog-posts-post.blog-post > div.blog-post-content > div:nth-of-type(1) > div:nth-of-type(1) > div.pagebuilder-column-group > div.pagebuilder-column-line > div.pagebuilder-column > div:nth-of-type(1) > p:nth-of-type(1) > strong:nth-of-type(1)
+  summary: main.page-main > div.columns > div.column.main > div.blog-posts > article.blog-posts-post.blog-post > div.blog-post-content > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > p:nth-of-type(1)
   image: div.page-wrapper > main.page-main > div.columns > div.column.main > div.blog-posts > article.blog-posts-post.blog-post > div.blog-post-featured-image-wrapper > a.blog-post-featured-image-link > picture:nth-of-type(1) > img.blog-post-lazyload-image.blog-post-featured-image
 
 output:
