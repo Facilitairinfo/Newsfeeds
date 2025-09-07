@@ -146,12 +146,19 @@
     const el = e.target;
     const mode = modeEl.value;
     const selector = getUniqueSelector(el);
+    const box = bbox(el);
+
+    console.log("🔍 Klik op mode:", mode);
+    console.log("🔹 Element:", el);
+    console.log("🔹 Selector:", selector);
+    console.log("🔹 Bounding box:", box);
+
     selections[mode] = selector;
     if (mode === "title") selTitle.textContent = selector;
     if (mode === "date") selDate.textContent = selector;
     if (mode === "summary") selSummary.textContent = selector;
-    renderOverlay(bbox(el), sel, true, "selected");
-    console.log("Clicked element:", el, "Selector:", selector);
+
+    renderOverlay(box, sel, true, "selected");
   }, true);
 
   doneBtn.addEventListener("click", () => {
