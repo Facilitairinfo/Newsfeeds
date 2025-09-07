@@ -17,17 +17,23 @@
     #__fi_panel code{display:block;white-space:nowrap;overflow:auto;max-width:40vw}
     .__fi_badge{display:inline-block;background:#222;border:1px solid #555;border-radius:4px;padding:2px 6px;margin:2px 4px 0 0}
     html.__fi_mode{scroll-padding-top:54px} body{margin-top:44px !important}
-    /* Hover marker: dun rood */
+
+    /* Hover marker */
     #__fi_hover_overlay{
       position:absolute;border:2px solid red;background:rgba(255,0,0,0.08);
       pointer-events:none;z-index:2147483645;display:none
     }
-    /* Selected item outline: geel */
+    /* Selected item (eerste item) */
     #__fi_item_overlay{
       position:absolute;border:2px solid #ffd000;background:rgba(255,208,0,0.14);
       pointer-events:none;z-index:2147483646;display:none
     }
-    /* Field previews: groene kaders over ALLE items */
+    /* Alle item-containers */
+    .__fi_item_outline{
+      position:absolute;border:2px dashed #ffd000;background:transparent;
+      pointer-events:none;z-index:2147483646;display:block
+    }
+    /* Field previews over ALLE items */
     .__fi_field_overlay{
       position:absolute;border:2px solid limegreen;background:rgba(0,255,0,0.18);
       pointer-events:none;z-index:2147483646;display:block
@@ -79,7 +85,8 @@
   itemOverlay.id = "__fi_item_overlay";
   document.body.appendChild(itemOverlay);
 
-  let fieldOverlays = []; // meerdere overlays voor alle item-velden
+  let itemOutlines = [];   // alle item-containers
+  let fieldOverlays = [];  // alle field matches
 
   // ---------- Elements ----------
   document.documentElement.classList.add("__fi_mode");
@@ -100,13 +107,7 @@
   // ---------- State ----------
   const state = {
     itemSel: "",
-    fields: {
-      title: "",
-      date: "",
-      summary: "",
-      link: "",
-      image: "",
-    }
+    fields: { title: "", date: "", summary: "", link: "", image: "" }
   };
 
   // ---------- Helpers ----------
@@ -126,6 +127,10 @@
     fieldOverlays.forEach(d => d.remove());
     fieldOverlays.length = 0;
   }
+  function clearItemOutlines(){
+    itemOutlines.forEach(d => d.remove());
+    itemOutlines.length = 0;
+  }
   function addFieldOverlay(r){
     const d = document.createElement("div");
     d.className = "__fi_field_overlay";
@@ -133,14 +138,17 @@
     document.body.appendChild(d);
     fieldOverlays.push(d);
   }
-
+  function addItemOutline(r){
+    const d = document.createElement("div");
+    d.className = "__fi_item_outline";
+    placeOverlay(d, r);
+    document.body.appendChild(d);
+    itemOutlines.push(d);
+  }
   function cssEscapeSegment(s) {
-    // Escapes for class/id segments
     return s.replace(/([ !"#$%&'()*+,./:;<=>?@[\\\]^`{|}~])/g, "\\$1");
   }
-
   function buildClassSelector(el) {
-    // Prefer class-based selector when possible
     if (!el || el.nodeType !== 1) return "";
     let parts = [];
     let cur = el;
@@ -149,7 +157,9 @@
       let seg = cur.tagName.toLowerCase();
       if (cur.id) { seg += "#" + CSS.escape(cur.id); parts.unshift(seg); break; }
       if (cur.classList && cur.classList.length) {
-        const classes = Array.from(cur.classList).slice(0,3).map(c => "." + cssEscapeSegment(c)).join("");
+        const classes = Array.from(cur.classList)
+          .filter(c => !/^ng-/.test(c) && !/^js-/.test(c) && !/^is-/.test(c) && !/^has-/.test(c))
+          .slice(0,3).map(c => "." + cssEscapeSegment(c)).join("");
         seg += classes;
       }
       parts.unshift(seg);
@@ -157,81 +167,71 @@
     }
     return parts.join(" > ");
   }
-
-  function generalizeToRepeating(selector, clickedEl) {
-    // Try multiple strategies to find a selector that matches multiple siblings/items
-    const trySelectors = [];
-
-    // Strategy A: class-based path
-    const classSel = buildClassSelector(clickedEl);
-    if (classSel) trySelectors.push(classSel);
-
-    // Strategy B: nearest ancestor with classes that yields multiple
-    let anc = clickedEl;
-    for (let i=0; i<6 && anc; i++, anc=anc.parentElement) {
-      if (!anc) break;
-      const s = buildClassSelector(anc);
-      if (s) trySelectors.push(s);
+  function nthPath(el){
+    if (!el || el.nodeType!==1) return "";
+    const parts=[];
+    let cur=el, depth=0;
+    while(cur && cur.nodeType===1 && depth++<8){
+      let seg=cur.tagName.toLowerCase();
+      if (cur.id){ seg += "#" + CSS.escape(cur.id); parts.unshift(seg); break; }
+      let idx=1, sib=cur;
+      while((sib=sib.previousElementSibling)) if (sib.tagName===cur.tagName) idx++;
+      seg += `:nth-of-type(${idx})`;
+      parts.unshift(seg);
+      cur=cur.parentElement;
     }
+    return parts.join(" > ");
+  }
+  function qsa(sel){ try { return document.querySelectorAll(sel); } catch { return []; } }
 
-    // Strategy C: fallback nth-of-type path (limited length)
-    function nthPath(el){
-      if (!el || el.nodeType!==1) return "";
-      const parts=[];
-      let cur=el, depth=0;
-      while(cur && cur.nodeType===1 && depth++<8){
-        let seg=cur.tagName.toLowerCase();
-        if (cur.id){ seg += "#" + CSS.escape(cur.id); parts.unshift(seg); break; }
-        let idx=1, sib=cur;
-        while((sib=sib.previousElementSibling)) if (sib.tagName===cur.tagName) idx++;
-        seg += `:nth-of-type(${idx})`;
-        parts.unshift(seg);
-        cur=cur.parentElement;
-      }
-      return parts.join(" > ");
-    }
-    trySelectors.push(nthPath(clickedEl));
+  function generalizeToRepeating(clickedEl) {
+    // Kandidaten
+    const candidates = new Set();
+    const add = s => { if (s) candidates.add(s); };
+
+    // A) class-based pad vanaf klik
+    add(buildClassSelector(clickedEl));
+    // B) class-based van voorouders
+    let a = clickedEl;
+    for (let i=0; i<6 && a; i++, a=a.parentElement) add(buildClassSelector(a));
+    // C) nth-of-type pad fallback
+    add(nthPath(clickedEl));
     let p = clickedEl.parentElement;
-    for (let i=0;i<4 && p;i++,p=p.parentElement) trySelectors.push(nthPath(p));
+    for (let i=0;i<4 && p;i++,p=p.parentElement) add(nthPath(p));
 
-    // Evaluate candidates
-    let best = "", bestCount = 0, bestSel = "";
-    for (const s of trySelectors) {
+    // D) heuristiek: zoek selectors die 2..200 nodes matchen en de klik bevatten
+    let bestSel = "", bestScore = -Infinity, bestCount = 0;
+    for (const s of candidates) {
       if (!s) continue;
       let nodes;
-      try { nodes = document.querySelectorAll(s); } catch { continue; }
-      const n = nodes ? nodes.length : 0;
-      // Heuristic: we want 2..200 matches and the clickedEl inside one of them
-      if (n >= 2 && n <= 200) {
-        // Confirm that clickedEl is inside one match (or equals)
-        let ok = false;
-        nodes.forEach(node => { if (node===clickedEl || node.contains(clickedEl)) ok = true; });
-        if (ok) {
-          // prefer class-based (no nth-of-type) & shorter
-          const score = (s.includes(":nth-of-type(") ? 0 : 1) * 1000 - s.length;
-          if (score > best) {
-            best = score; bestSel = s; bestCount = n;
-          }
-        }
-      }
+      try { nodes = qsa(s); } catch { continue; }
+      const n = nodes.length;
+      if (n < 2 || n > 400) continue;
+      let contains = false;
+      nodes.forEach(node => { if (node===clickedEl || node.contains(clickedEl)) contains = true; });
+      if (!contains) continue;
+      // score: class-based (zonder nth-of-type) preferred, korter preferred, meer matches preferred (tot op zekere hoogte)
+      const classPref = s.includes(":nth-of-type(") ? 0 : 1;
+      const score = classPref*2000 - s.length + Math.min(n, 100);
+      if (score > bestScore) { bestScore = score; bestSel = s; bestCount = n; }
     }
+
+    // Laatste poging: dichtstbijzijnde voorouder die 2+ matcht
     if (!bestSel) {
-      // As a last resort, pick the closest ancestor that gives at least 2 matches
       let cur = clickedEl;
       while (cur) {
         const s = buildClassSelector(cur) || nthPath(cur);
-        try {
-          const n = document.querySelectorAll(s).length;
-          if (n >= 2 && n <= 200) { bestSel = s; bestCount = n; break; }
-        } catch {}
+        let n = 0;
+        try { n = qsa(s).length; } catch {}
+        if (n >= 2 && n <= 400) { bestSel = s; bestCount = n; break; }
         cur = cur.parentElement;
       }
     }
+
     return { selector: bestSel, count: bestCount };
   }
 
-  function getUniqueRelativeSelector(itemNode, target) {
-    // Build a short relative selector (using :scope) from itemNode to target
+  function getRelativeSelector(itemNode, target) {
     if (!itemNode || !target) return "";
     if (itemNode === target) return ":scope";
     const parts = [];
@@ -240,7 +240,9 @@
       let seg = cur.tagName.toLowerCase();
       if (cur.id) { seg += "#" + CSS.escape(cur.id); parts.unshift(seg); break; }
       if (cur.classList && cur.classList.length) {
-        const classes = Array.from(cur.classList).slice(0,3).map(c => "." + cssEscapeSegment(c)).join("");
+        const classes = Array.from(cur.classList)
+          .filter(c => !/^ng-/.test(c) && !/^js-/.test(c) && !/^is-/.test(c) && !/^has-/.test(c))
+          .slice(0,3).map(c => "." + cssEscapeSegment(c)).join("");
         seg += classes;
       } else {
         let idx=1, sib=cur;
@@ -253,56 +255,6 @@
     return parts.length ? ":scope " + parts.join(" > ") : "";
   }
 
-  function qsa(sel){ try { return document.querySelectorAll(sel); } catch { return []; } }
-
-  function preview() {
-    clearFieldOverlays();
-    countsEl.textContent = "–";
-
-    if (!state.itemSel) {
-      itemOverlay.style.display = "none";
-      return;
-    }
-
-    // Markeer één voorbeeld-item (eerste)
-    const items = Array.from(qsa(state.itemSel));
-    if (!items.length) {
-      itemOverlay.style.display = "none";
-      return;
-    }
-    placeOverlay(itemOverlay, rect(items[0]));
-
-    // Voor elk veld: zoek matches binnen alle items met de relatieve selector
-    const fieldKeys = ["title","date","summary","link","image"];
-    const counts = {};
-    fieldKeys.forEach(k => counts[k] = 0);
-
-    for (const item of items) {
-      fieldKeys.forEach(key => {
-        const rel = state.fields[key];
-        if (!rel) return;
-        let nodes = [];
-        try {
-          nodes = item.querySelectorAll(rel.replace(/^:scope\s*/,""));
-        } catch {}
-        nodes.forEach(n => {
-          const r = rect(n);
-          if (r.width>0 && r.height>0) {
-            addFieldOverlay(r);
-            counts[key]++;
-          }
-        });
-      });
-    }
-
-    // Toon aantallen
-    const flags = fieldKeys
-      .filter(k => state.fields[k])
-      .map(k => `${k}:${counts[k]}`)
-      .join("  ");
-    countsEl.textContent = flags || "–";
-  }
-
   function updateCodes() {
     codeEls.item.textContent = state.itemSel || "–";
     codeEls.title.textContent = state.fields.title || "–";
@@ -310,6 +262,45 @@
     codeEls.summary.textContent = state.fields.summary || "–";
     codeEls.link.textContent = state.fields.link || "–";
     codeEls.image.textContent = state.fields.image || "–";
+  }
+
+  function preview() {
+    clearFieldOverlays();
+    clearItemOutlines();
+    countsEl.textContent = "–";
+
+    if (!state.itemSel) {
+      itemOverlay.style.display = "none";
+      return;
+    }
+
+    const items = Array.from(qsa(state.itemSel));
+    if (!items.length) {
+      itemOverlay.style.display = "none";
+      return;
+    }
+
+    // Teken alle item-containers (gestippeld), highlight eerste item (geel)
+    items.forEach(n => addItemOutline(rect(n)));
+    placeOverlay(itemOverlay, rect(items[0]));
+
+    const keys = ["title","date","summary","link","image"];
+    const counts = Object.fromEntries(keys.map(k => [k,0]));
+
+    for (const item of items) {
+      for (const key of keys) {
+        const rel = state.fields[key];
+        if (!rel) continue;
+        let nodes = [];
+        try { nodes = item.querySelectorAll(rel.replace(/^:scope\s*/,"")); } catch {}
+        nodes.forEach(n => {
+          const r = rect(n);
+          if (r.width>0 && r.height>0) { addFieldOverlay(r); counts[key]++; }
+        });
+      }
+    }
+    const flags = keys.filter(k => state.fields[k]).map(k => `${k}:${counts[k]}`).join("  ");
+    countsEl.textContent = flags || "–";
   }
 
   // ---------- Events ----------
@@ -335,7 +326,6 @@
         return;
       }
       state.itemSel = selector;
-      placeOverlay(itemOverlay, rect(el.closest(selector) || el));
       updateCodes();
       preview();
       return;
@@ -346,20 +336,31 @@
       return;
     }
 
-    // Bepaal in welk item je klikt en maak een relatieve selector
-    const itemNode = el.closest(state.itemSel);
-    if (!itemNode) {
-      alert("Klik binnen een geselecteerd item.");
+    const items = Array.from(qsa(state.itemSel));
+    if (!items.length) {
+      alert("De item-selector matcht niets meer. Selecteer Item opnieuw.");
       return;
     }
 
-    const rel = getUniqueRelativeSelector(itemNode, el);
+    // Zoek het item waarin geklikt is (of neem het dichtstbijzijnde)
+    let container = el.closest(state.itemSel);
+    if (!container) {
+      // fallback: kies het dichtstbijzijnde item obv DOM-positie
+      container = items.find(n => n.contains(el)) || items[0];
+      if (!container || !container.contains(el)) {
+        alert("Klik binnen een geselecteerd item.");
+        return;
+      }
+    }
+
+    // Bepaal relatieve selector
+    const rel = getRelativeSelector(container, el);
     if (!rel) {
       alert("Kon geen relatieve selector bepalen. Klik op het tekst-element zelf of iets hoger in de structuur.");
       return;
     }
 
-    // Toggle: als je exact dezelfde selector nogmaals kiest voor dezelfde mode, wis die
+    // Toggle (nogmaals klikken op exact hetzelfde = deselect)
     if (state.fields[mode] && state.fields[mode] === rel) {
       state.fields[mode] = "";
     } else {
@@ -370,21 +371,20 @@
     preview();
   }, true);
 
-  previewBtn.addEventListener("click", () => {
-    preview();
-  });
+  previewBtn.addEventListener("click", () => { preview(); });
 
   clearBtn.addEventListener("click", () => {
     state.itemSel = "";
     state.fields = { title:"", date:"", summary:"", link:"", image:"" };
     updateCodes();
     clearFieldOverlays();
+    clearItemOutlines();
     itemOverlay.style.display = "none";
   });
 
   doneBtn.addEventListener("click", () => {
     const payload = {
-      type: "FEED_DONE",
+      type: "FI_FEED_DONE",
       selections: {
         item: state.itemSel,
         title: state.fields.title,
@@ -397,11 +397,17 @@
     };
     try { window.opener && window.opener.postMessage(payload, "*"); } catch {}
     try { window.parent && window.parent.postMessage(payload, "*"); } catch {}
-    console.log("FEED_DONE", payload);
-    alert("Selecties verzonden (zie console en opener-venster).");
+    console.log("FI_FEED_DONE", payload);
+    alert("Selecties verzonden (zie console/opener).");
   });
 
-  // ---------- Helpers: auto-hide cookie/popups ----------
+  // Op DOM mutaties & viewport events: preview hertekenen
+  const mo = new MutationObserver(() => { if (state.itemSel) preview(); });
+  mo.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
+  window.addEventListener("scroll", () => { if (state.itemSel) preview(); }, true);
+  window.addEventListener("resize", () => { if (state.itemSel) preview(); }, true);
+
+  // Populaire cookie/selectie-blockers verbergen
   setTimeout(() => {
     const hide = [".cookie-banner",".cookie-consent","#cookie",".cc-window",".cookie-wrapper",".cookie-notice",".cookie-popup",".cookies","#cookies"];
     for (const s of hide) { const n = document.querySelector(s); if (n) n.style.display = "none"; }
