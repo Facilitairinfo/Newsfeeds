@@ -34,10 +34,11 @@ jobs:
       - name: Genereer dashboard
         run: python scripts/gen_feedstatus.py
 
-      - name: Commit en push
+      - name: Commit and push changes
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
+          git pull origin main --rebase
           git add docs/*.xml docs/feedstatus.json docs/feedonderhoud.html 2>/dev/null || true
-          git commit -m "Scrape feeds via testworkflow [skip ci]" || echo "Geen wijzigingen"
+          git commit -m "Update feeds & status via Build & Scrape Feeds [skip ci]" || echo "Geen wijzigingen"
           git push origin main
