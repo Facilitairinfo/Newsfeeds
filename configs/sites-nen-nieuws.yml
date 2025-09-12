@@ -3,14 +3,14 @@ source_url: https://www.nen.nl/nieuws
 
 render: true
 scroll_to_bottom: true
-wait_for_selector: "article.blog-posts-post a.blog-post-title-link"
+wait_for_selector: "div.blog-posts-post a.blog-post-title-link"
 wait_for_count: 3
 
 selectors:
-  title: "article.blog-posts-post header h2.blog-post-title a.blog-post-title-link"
-  date: "article.blog-posts-post header ul.blog-post-info li.blog-post-info-item"
-  summary: "article.blog-posts-post div.blog-post-content p"
-  image: "article.blog-posts-post img.blog-post-lazyload-image.blog-post-featured-image"
+  title: "div.blog-posts-post a.blog-post-title-link"
+  date: "div.blog-posts-post li.blog-post-info-item"
+  summary: "div.blog-posts-post div.blog-post-content p"
+  image: "div.blog-posts-post img.blog-post-lazyload-image.blog-post-featured-image"
 
 output:
   feed_file: docs/sites-nen-nieuws.xml
@@ -18,5 +18,5 @@ output:
   site_url: https://www.nen.nl/nieuws
 
 limits:
-  max_items: 20
+  max_items: 5
   dedupe_on: url
