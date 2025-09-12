@@ -26,25 +26,33 @@ jobs:
           pip install -r requirements.txt
           playwright install --with-deps
 
-      # 4. Scraper draaien + snapshot opslaan
-      - name: Run NEN scraper with debug
+      # 4. Snapshot ophalen
+      - name: Haal NEN HTML op
         run: |
           mkdir -p debug
           echo "📸 Snapshot van NEN-site ophalen..."
           curl -sL https://www.nen.nl/nieuws -o debug/nen_raw.html || echo "Snapshot mislukt"
-          echo "🚀 Scraper starten..."
-          python scripts/run_scraper.py --config configs/sites-nen-nieuws.yml || echo "Scraper faalde"
-          echo "📁 Bestanden in /docs:"
-          ls -lah docs/
-          test -f docs/sites-nen-nieuws.xml && echo "✅ XML gegenereerd" || echo "❌ XML ontbreekt"
-          echo "📤 Snapshot kopiëren naar /docs/"
           cp debug/nen_raw.html docs/nen_raw.html
 
-      # 5. Commit en push snapshot
-      - name: Commit snapshot
+      # 5. Scraper starten
+      - name: Scraper starten
+        run: |
+          echo "🚀 Start scraper met config"
+          python scripts/run_scraper.py --config configs/sites-nen-nieuws.yml || echo "Scraper faalde"
+
+      # 6. Fallback voor lege XML
+      - name: Forceer lege XML als fallback
+        run: |
+          if [ ! -f docs/sites-nen-nieuws.xml ]; then
+            echo "⚠️ Geen XML aangetroffen, schrijf lege placeholder"
+            echo '<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>NEN Nieuws</title><description>Geen items gevonden</description><link>https://www.nen.nl/nieuws</link></channel></rss>' > docs/sites-nen-nieuws.xml
+          fi
+
+      # 7. Commit en push snapshot + XML
+      - name: Commit snapshot en XML
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git add docs/nen_raw.html
-          git commit -m "Voeg NEN snapshot toe voor inspectie [skip ci]" || echo "Geen wijzigingen"
+          git add docs/nen_raw.html docs/sites-nen-nieuws.xml
+          git commit -m "Update NEN snapshot en XML [skip ci]" || echo "Geen wijzigingen"
           git push origin main
