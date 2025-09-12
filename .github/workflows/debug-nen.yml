@@ -7,29 +7,44 @@ jobs:
   debug-nen:
     runs-on: ubuntu-latest
     steps:
+      # 1. Haal de repo op
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # 2. Installeer Python
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      # 3. Installeer dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           playwright install --with-deps
 
+      # 4. Scraper draaien + snapshot opslaan
       - name: Run NEN scraper with debug
         run: |
           mkdir -p debug
-          echo "Snapshot van NEN-site ophalen..."
+          echo "📸 Snapshot van NEN-site ophalen..."
           curl -sL https://www.nen.nl/nieuws -o debug/nen_raw.html || echo "Snapshot mislukt"
-          echo "Scraper starten..."
+          echo "🚀 Scraper starten..."
           python scripts/run_scraper.py --config configs/sites-nen-nieuws.yml || echo "Scraper faalde"
-          echo "Bestanden in /docs:"
+          echo "📁 Bestanden in /docs:"
           ls -lah docs/
           test -f docs/sites-nen-nieuws.xml && echo "✅ XML gegenereerd" || echo "❌ XML ontbreekt"
+          echo "📤 Snapshot kopiëren naar /docs/"
+          cp debug/nen_raw.html docs/nen_raw.html
+
+      # 5. Commit en push snapshot
+      - name: Commit snapshot
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add docs/nen_raw.html
+          git commit -m "Voeg NEN snapshot toe voor inspectie [skip ci]" || echo "Geen wijzigingen"
+          git push origin main
