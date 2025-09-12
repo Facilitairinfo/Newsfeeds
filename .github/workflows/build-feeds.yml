@@ -1,11 +1,10 @@
-# Heractiveer handmatige workflowregistratie
 name: 🛠️ Build & Scrape Feeds 🔄
 
 on:
   workflow_dispatch:
   schedule:
     # Draait om 04:00, 07:00, 08:00, 09:00, 10:00, 13:00, 16:00 en 19:00 NL tijd
-    - cron: "0 2,5,6,7,8,11,14,17 * * *"  # UTC tijden
+    - cron: "0 2,5,6,7,8,11,14,17 * * *" # UTC tijden
 
 jobs:
   build:
@@ -60,6 +59,18 @@ jobs:
             echo "⚠️ Fout, poging $ATTEMPTS/$MAX_ATTEMPTS — wacht 10s..."
             sleep 10
           done
+
+      # 6b. Debug scraping NEN-feed
+      - name: Run scraper with debug
+        run: |
+          mkdir -p debug
+          echo "Snapshot van NEN-site ophalen..."
+          curl -sL https://www.nen.nl/nieuws -o debug/nen_raw.html || echo "Snapshot mislukt"
+          echo "Scraper starten..."
+          python scripts/run_scraper.py --config configs/sites-nen-nieuws.yml || echo "Scraper faalde"
+          echo "Bestanden in /docs:"
+          ls -lah docs/
+          test -f docs/sites-nen-nieuws.xml && echo "✅ XML gegenereerd" || echo "❌ XML ontbreekt"
 
       # 7. Genereer feedstatus dashboard
       - name: Genereer feedstatus dashboard
