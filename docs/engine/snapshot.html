@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Sloth Engine — Snapshot</title>
+</head>
+<body>
+  <h1>Snapshot</h1>
+  <label>GitHub Token:
+    <input id="token" type="password" placeholder="ghp_..." />
+  </label>
+  <button id="saveToken">Save token</button>
+  <br/><br/>
+  <label>Nieuws URL:
+    <input id="url" type="text" style="width: 480px;" placeholder="https://www.nen.nl/nieuws" />
+  </label>
+  <button id="snap">Maak snapshot</button>
+  <pre id="out"></pre>
+
+  <script src="./engine.js"></script>
+  <script>
+    Engine.loadToken();
+    if (Engine.state.token) document.getElementById("token").placeholder = "token loaded";
+
+    document.getElementById("saveToken").onclick = () => {
+      Engine.setToken(document.getElementById("token").value.trim());
+      alert("Token opgeslagen in je browser.");
+    };
+
+    function slugify(url) {
+      return url.replace(/^https?:\/\//, "")
+                .replace(/[^a-z0-9]+/gi, "-")
+                .replace(/(^-|-$)/g, "")
+                .toLowerCase();
+    }
+
+    document.getElementById("snap").onclick = async () => {
+      const url = document.getElementById("url").value.trim();
+      const out = document.getElementById("out");
+      out.textContent = "Bezig met ophalen via proxy...";
+      try {
+        const html = await Engine.fetchSnapshot(url);
+        const slug = slugify(url);
+        const path = `docs/snapshots/${slug}.html`;
+        await Engine.githubPutFile(path, html, `Snapshot ${url}`);
+        const selectorUrl = `./selector.html?snapshot=${encodeURIComponent(path)}&site=${encodeURIComponent(url)}`;
+        out.innerHTML = `Snapshot opgeslagen: <a href="../${path.replace('docs/','')}" target="_blank">${path}</a>
+        <br/>Ga verder: <a href="${selectorUrl}">Selector kiezen</a>`;
+      } catch (e) {
+        out.textContent = "Fout: " + e.message;
+      }
+    };
+  </script>
+</body>
+</html>
