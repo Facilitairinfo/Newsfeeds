@@ -3,7 +3,7 @@ const Engine = (() => {
     owner: "Facilitairinfo",
     repo: "Newsfeeds",
     branch: "main",
-    proxyURL: "https://super-breeze-44c7.workers.dev", // ← jouw Cloudflare Worker URL
+    proxyURL: "https://slothproxyv2.up.railway.app", // ← jouw nieuwe proxy-URL
     token: null,
   };
 
@@ -41,12 +41,14 @@ const Engine = (() => {
     } catch (_) {
       // bestand bestaat nog niet
     }
+
     const body = {
       message: message || `Update ${targetPath}`,
       content: btoa(unescape(encodeURIComponent(contentText))),
       branch: state.branch,
       sha,
     };
+
     const res = await fetch(`https://api.github.com/repos/${state.owner}/${state.repo}/contents/${encodeURIComponent(targetPath)}`, {
       method: "PUT",
       headers: {
@@ -55,13 +57,14 @@ const Engine = (() => {
       },
       body: JSON.stringify(body),
     });
+
     if (!res.ok) throw new Error(await res.text());
     return res.json();
   }
 
   // 🌐 Snapshot ophalen via proxy
   async function fetchSnapshot(url) {
-    const res = await fetch(`${state.proxyURL}/?url=${encodeURIComponent(url)}`);
+    const res = await fetch(`${state.proxyURL}/snapshot?url=${encodeURIComponent(url)}`);
     if (!res.ok) throw new Error("Proxy fetch failed");
     return await res.text();
   }
