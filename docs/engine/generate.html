@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Sloth Engine — Generate</title>
+</head>
+<body>
+  <h1>Generate feed</h1>
+  <label>GitHub Token:
+    <input id="token" type="password" placeholder="ghp_..." />
+  </label>
+  <button id="saveToken">Save token</button>
+  <br/><br/>
+  <label>Config JSON pad (in repo):
+    <input id="cfgPath" type="text" style="width: 480px;" placeholder="docs/configs/www-nen-nl-nieuws.json" />
+  </label>
+  <button id="load">Load config</button>
+  <pre id="log"></pre>
+
+  <script src="./engine.js"></script>
+  <script src="./rss.js"></script>
+  <script>
+    Engine.loadToken();
+    if (Engine.state.token) document.getElementById("token").placeholder = "token loaded";
+
+    document.getElementById("saveToken").onclick = () => {
+      Engine.setToken(document.getElementById("token").value.trim());
+      alert("Token opgeslagen in je browser.");
+    };
+
+    async function fetchFileRaw(path) {
+      const url = `https://raw.githubusercontent.com/${Engine.state.owner}/${Engine.state.repo}/${Engine.state.branch}/${path}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Kan niet laden: " + path);
+      return res.text();
+    }
+
+    function parseItems(html, cfg) {
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const items = [];
+      const nodes = doc.querySelectorAll(cfg.selectors.items);
+      nodes.forEach((n, idx) => {
+        const titleEl = cfg.selectors.title ? n.querySelector(cfg.selectors.title) : null;
+        const dateEl = cfg.selectors.date ? n.querySelector(cfg.selectors.date) : null;
+        const sumEl  = cfg.selectors.summary ? n.querySelector(cfg.selectors.summary) : null;
+        const imgEl  = cfg.selectors.image ? n.querySelector(cfg.selectors.image) : null;
+        const linkAttr = cfg.selectors.linkAttr || "href";
+        const link = titleEl?.getAttribute(linkAttr) || titleEl?.href || "";
+        const item = {
+          title: titleEl?.textContent?.trim() || "",
+          link: link && link.startsWith("/") ? new URL(link, cfg.site_url).href : link,
+          pubDate: dateEl?.textContent?.trim() || "",
+          description: sumEl?.textContent?.trim() || "",
+          guid: (link || (cfg.site_url + "#" + idx)),
+          image: imgEl?.src || "",
+        };
+        if (item.title || item.link) items.push(item);
+      });
+      return items;
+    }
+
+    document.getElementById("load").onclick = async () => {
+      const path = document.getElementById("cfgPath").value.trim();
+      const log = document.getElementById("log");
+      log.textContent = "Config laden...";
+      try {
+        const cfg = JSON.parse(await fetchFileRaw(path));
+        const html = await fetchFileRaw(cfg.snapshot_path.replace("docs/", ""));
+        const items = parseItems(html, cfg);
+
+        log.textContent = `Items gevonden: ${items.length}`;
+        const rss = buildRSS({
+          title: cfg.site_name,
+          link: cfg.site_url,
+          description: `Feed voor ${cfg.site_url}`,
+          items
+        });
+        const json = buildJSONFeed({
+          title: cfg.site_name,
+          home_page_url: cfg.site_url,
+          feed_url: `https://facilitairinfo.github.io/Newsfeeds/sites-${cfg.site_name}.json`,
+          items
+        });
+
+        const xmlPath = `docs/sites-${cfg.site_name}.xml`;
+        const jsonPath = `docs/sites-${cfg.site_name}.json`;
+        await Engine.githubPutFile(xmlPath, rss, `Update RSS ${cfg.site_name}`);
+        await Engine.githubPutFile(jsonPath, json, `Update JSON ${cfg.site_name}`);
+
+        log.innerHTML += `
+
+✅ RSS: https://facilitairinfo.github.io/Newsfeeds/sites-${cfg.site_name}.xml  
+✅ JSON: https://facilitairinfo.github.io/Newsfeeds/sites-${cfg.site_name}.json
+`;
+      } catch (e) {
+        log.textContent = "Fout: " + e.message;
+      }
+    };
+  </script>
+</body>
+</html>
