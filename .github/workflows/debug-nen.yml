@@ -48,11 +48,12 @@ jobs:
             echo '<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>NEN Nieuws</title><description>Geen items gevonden</description><link>https://www.nen.nl/nieuws</link></channel></rss>' > docs/sites-nen-nieuws.xml
           fi
 
-      # 7. Commit en push snapshot + XML
+      # 7. Commit snapshot en XML
       - name: Commit snapshot en XML
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git add docs/nen_raw.html docs/sites-nen-nieuws.xml
           git commit -m "Update NEN snapshot en XML [skip ci]" || echo "Geen wijzigingen"
+          git pull origin main --rebase
           git push origin main
