@@ -9,7 +9,7 @@ wait_for_count: 3
 selectors:
   title: "article.blog-posts-post a.blog-post-title-link"
   date: "article.blog-posts-post li.blog-post-info-item"
-  summary: "article.blog-posts-post div.blog-post-content p"
+  summary: "article.blog-posts-post div.blog-post-content"
   image: "article.blog-posts-post img.blog-post-featured-image"
 
 output:
