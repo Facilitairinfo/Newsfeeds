@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Sloth Engine — Selector</title>
+  <style>
+    #preview { width: 100%; height: 70vh; border: 1px solid #ccc; }
+    .label { font-weight: bold; }
+    .pick { margin: 4px 0; }
+    .sel { width: 100%; }
+    #overlay { position: fixed; pointer-events: none; border: 2px solid #f5b800; z-index: 9999; display: none; }
+  </style>
+</head>
+<body>
+  <h1>Selector</h1>
+  <div>
+    <span class="label">Snapshot:</span> <span id="snapPath"></span><br/>
+    <span class="label">Site URL:</span> <span id="siteUrl"></span>
+  </div>
+  <hr/>
+  <iframe id="preview"></iframe>
+  <div id="overlay"></div>
+  <h3>Velden</h3>
+  <div class="pick"><span class="label">Items container CSS:</span><input id="items" class="sel" placeholder="bijv. article.blog-posts-post" /></div>
+  <div class="pick"><span class="label">Titel CSS:</span><input id="title" class="sel" placeholder="a.blog-post-title-link" /></div>
+  <div class="pick"><span class="label">Link attribuut:</span><input id="linkAttr" class="sel" value="href" /></div>
+  <div class="pick"><span class="label">Datum CSS:</span><input id="date" class="sel" placeholder="li.blog-post-info-item" /></div>
+  <div class="pick"><span class="label">Samenvatting CSS:</span><input id="summary" class="sel" placeholder="div.blog-post-content" /></div>
+  <div class="pick"><span class="label">Afbeelding CSS (optioneel):</span><input id="image" class="sel" placeholder="img.blog-post-featured-image" /></div>
+
+  <button id="save">Opslaan</button>
+  <span id="status"></span>
+
+  <script src="./engine.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const snap = params.get("snapshot");
+    const site = params.get("site");
+    document.getElementById("snapPath").textContent = snap || "";
+    document.getElementById("siteUrl").textContent = site || "";
+    const iframe = document.getElementById("preview");
+    iframe.src = "../" + (snap || "").replace("docs/", "");
+    Engine.loadToken();
+
+    // Highlight overlay
+    const overlay = document.getElementById("overlay");
+    iframe.addEventListener("load", () => {
+      const doc = iframe.contentDocument;
+      doc.addEventListener("mousemove", e => {
+        const el = e.target;
+        const rect = el.getBoundingClientRect();
+        overlay.style.display = "block";
+        overlay.style.left = rect.left + "px";
+        overlay.style.top = rect.top + "px";
+        overlay.style.width = rect.width + "px";
+        overlay.style.height = rect.height + "px";
+      });
+      // Click to capture selector
+      doc.addEventListener("click", e => {
+        e.preventDefault();
+        e.stopPropagation();
+        const sel = cssPath(e.target);
+        const activeField = document.querySelector(".sel:focus");
+        if (activeField) activeField.value = sel;
+      }, true);
+    });
+
+    function cssPath(el) {
+      if (!(el instanceof Element)) return "";
+      const path = [];
+      while (el && el.nodeType === Node.ELEMENT_NODE && path.length < 10) {
+        let selector = el.nodeName.toLowerCase();
+        if (el.id) { selector += "#" + el.id; path.unshift(selector); break; }
+        let sib = el, nth = 1;
+        while (sib = sib.previousElementSibling) if (sib.nodeName.toLowerCase() === selector) nth++;
+        if (nth > 1) selector += `:nth-of-type(${nth})`;
+        if (el.classList.length) selector += "." + [...el.classList].join(".");
+        path.unshift(selector);
+        el = el.parentElement;
+      }
+      return path.join(" > ");
+    }
+
+    document.getElementById("save").onclick = async () => {
+      const slug = (site || "site").replace(/^https?:\/\//, "").replace(/[^a-z0-9]+/gi, "-").replace(/(^-|-$)/g, "").toLowerCase();
+      const cfg = {
+        site_name: slug,
+        site_url: site,
+        snapshot_path: snap,
+        selectors: {
+          items: document.getElementById("items").value.trim(),
+          title: document.getElementById("title").value.trim(),
+          linkAttr: document.getElementById("linkAttr").value.trim() || "href",
+          date: document.getElementById("date").value.trim(),
+          summary: document.getElementById("summary").value.trim(),
+          image: document.getElementById("image").value.trim(),
+        }
+      };
+      try {
+        await Engine.githubPutFile(`docs/configs/${slug}.json`, JSON.stringify(cfg, null, 2), `Save selectors for ${slug}`);
+        document.getElementById("status").textContent = "Opgeslagen. Ga door naar Generate.";
+      } catch (e) {
+        document.getElementById("status").textContent = "Fout: " + e.message;
+      }
+    };
+  </script>
+</body>
+</html>
